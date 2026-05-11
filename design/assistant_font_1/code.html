@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200..800&amp;family=Fira+Code:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #111927;
+            font-family: 'Assistant', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#bdc6dd",
+                    "surface-container-highest": "#313728",
+                    "on-tertiary": "#352b4e",
+                    "on-background": "#dfe5d0",
+                    "on-primary-container": "#436900",
+                    "tertiary": "#faf3ff",
+                    "tertiary-fixed-dim": "#cec0ec",
+                    "secondary-fixed-dim": "#bdc6dd",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "on-primary-fixed": "#111f00",
+                    "on-tertiary-fixed-variant": "#4c4165",
+                    "inverse-on-surface": "#2d3224",
+                    "on-secondary-fixed": "#121c2c",
+                    "background-deep": "#111927",
+                    "tertiary-container": "#e1d2ff",
+                    "error-container": "#93000a",
+                    "background": "#101509",
+                    "inverse-surface": "#dfe5d0",
+                    "surface-terminal": "#0D1117",
+                    "surface-container-lowest": "#0b1005",
+                    "surface": "#101509",
+                    "surface-dim": "#101509",
+                    "secondary-container": "#40495c",
+                    "inverse-primary": "#436900",
+                    "primary-fixed": "#a8f91a",
+                    "on-tertiary-fixed": "#201537",
+                    "status-critical": "#FF4D4D",
+                    "on-error": "#690005",
+                    "outline": "#8b947a",
+                    "surface-container": "#1c2114",
+                    "secondary-fixed": "#dae2fa",
+                    "status-success": "#9FEF00",
+                    "text-primary": "#F3F4F6",
+                    "on-surface-variant": "#c1caae",
+                    "primary-fixed-dim": "#91db00",
+                    "outline-variant": "#414a34",
+                    "surface-card": "#1C2536",
+                    "on-secondary-fixed-variant": "#3e4759",
+                    "surface-container-low": "#181d10",
+                    "surface-variant": "#313728",
+                    "primary-container": "#9fef00",
+                    "on-secondary": "#283042",
+                    "on-primary": "#213600",
+                    "on-surface": "#dfe5d0",
+                    "primary": "#e3ffb8",
+                    "tertiary-fixed": "#e9ddff",
+                    "surface-bright": "#363b2c",
+                    "surface-container-high": "#262c1e",
+                    "on-tertiary-container": "#64587f",
+                    "surface-tint": "#91db00",
+                    "on-secondary-container": "#afb8cf",
+                    "border-subtle": "#1C2536",
+                    "on-primary-fixed-variant": "#324f00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "container-padding": "24px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "32px"
+            },
+            "fontFamily": {
+                    "technical-mono": ["Fira Code", "monospace"],
+                    "sans": ["Assistant", "sans-serif"],
+                    "assistant": ["Assistant", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background-deep text-on-surface overflow-hidden font-assistant">
+<!-- TopAppBar -->
+<header class="bg-[#111927] text-[#9FEF00] font-assistant tracking-tight docked full-width top-0 border-b border-[#1C2536] flat no shadows flex justify-between items-center px-6 w-full h-16 z-50 fixed">
+<div class="flex items-center gap-6">
+<div class="text-xl font-black tracking-tighter text-[#9FEF00] uppercase">SOC-Next</div>
+<nav class="hidden md:flex gap-8 items-center h-full pt-1">
+<a class="text-slate-400 hover:text-[#9FEF00] transition-colors" href="#">Training</a>
+<a class="text-[#9FEF00] border-b-2 border-[#9FEF00] pb-1" href="#">Alerts</a>
+<a class="text-slate-400 hover:text-[#9FEF00] transition-colors" href="#">Simulations</a>
+<a class="text-slate-400 hover:text-[#9FEF00] transition-colors" href="#">Academy</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+<input class="bg-[#1C2536] border border-[#1C2536] rounded px-10 py-1.5 text-sm focus:border-[#9FEF00] outline-none text-slate-200 w-64 text-right font-assistant" placeholder="חפש התראות..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-slate-400 hover:text-[#9FEF00] transition-colors">terminal</button>
+<button class="material-symbols-outlined text-slate-400 hover:text-[#9FEF00] transition-colors">notifications</button>
+<button class="material-symbols-outlined text-slate-400 hover:text-[#9FEF00] transition-colors">settings</button>
+<div class="h-8 w-8 rounded-full bg-surface-container overflow-hidden border border-[#1C2536]">
+<img alt="Analyst profile" class="h-full w-full object-cover" data-alt="A close-up professional headshot of a cyber security analyst in a dimly lit, high-tech control room environment. The subject is wearing modern tactical gear and has a focused expression, with the soft glow of multiple computer monitors reflecting off their face. The background is a sophisticated mix of deep navy blues and sharp neon green data streams, maintaining a mission-critical SOC atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkdBKm-z6GZ-5n707pZfD12WZsLJVrVNCLcMIPXyUqmP0wlFRlVMm2BzFZMqJEpB9M5NXBeeILC-WBBknmIIyvsuw0lImVpJF4wMJe6VVFm4POZXuK29HNxVgxFpNSlcqd5LE0gAXJLLwKEO-wLHgwFKpYEhVfjYj1fv827Jb2Qq_Zk3y4LDmGHGS0NVJQLKWLfCm0NNVIMVXf-EwMIvJzx0pKVG-3fCBK0M22nwhtAvMM6xB3CfkwUQB8iWkqbxyBnVd4ukVrgZ3P"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Sidebar & Content Wrapper -->
+<div class="flex h-screen pt-16">
+<!-- SideNavBar -->
+<aside class="bg-[#111927] font-assistant font-semibold text-sm h-full w-64 border-r border-[#1C2536] flat no shadows fixed right-0 top-16 bottom-0 flex flex-col z-40">
+<div class="p-6 border-b border-[#1C2536]">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-2 h-2 rounded-full bg-status-success animate-pulse"></div>
+<span class="text-lg font-bold text-[#9FEF00]">Unit 01</span>
+</div>
+<div class="text-[10px] text-slate-500 uppercase tracking-widest">Active Session: 04h 12m</div>
+</div>
+<nav class="flex-1 py-4 overflow-y-auto">
+<a class="flex items-center gap-3 text-slate-500 px-6 py-3 hover:bg-[#1C2536] hover:text-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 bg-[#1C2536] text-[#9FEF00] border-r-4 border-[#9FEF00] px-6 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+<span>Threat Hunt</span>
+</a>
+<a class="flex items-center gap-3 text-slate-500 px-6 py-3 hover:bg-[#1C2536] hover:text-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">terminal</span>
+<span>Logs</span>
+</a>
+<a class="flex items-center gap-3 text-slate-500 px-6 py-3 hover:bg-[#1C2536] hover:text-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span>Playbooks</span>
+</a>
+<a class="flex items-center gap-3 text-slate-500 px-6 py-3 hover:bg-[#1C2536] hover:text-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span>Reports</span>
+</a>
+<div class="mt-8 px-6">
+<button class="w-full bg-[#9FEF00] text-[#111927] py-3 rounded font-bold uppercase tracking-tighter text-xs active:scale-95 duration-100 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                        New Investigation
+                    </button>
+</div>
+</nav>
+<div class="border-t border-[#1C2536] p-4">
+<a class="flex items-center gap-3 text-slate-600 px-4 py-2 hover:text-slate-300" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="text-xs uppercase tracking-widest">Support</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 px-4 py-2 hover:text-slate-300" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-xs uppercase tracking-widest">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 mr-64 p-8 overflow-y-auto bg-background-deep font-assistant">
+<!-- Breadcrumbs & Header -->
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h1 class="text-3xl font-bold text-text-primary mb-1">תור התראות פעיל</h1>
+<p class="text-slate-400">מעקב וניהול אירועי אבטחה בזמן אמת עבור סביבת המבצעים</p>
+</div>
+<div class="flex gap-4">
+<div class="flex gap-2">
+<span class="bg-[#1C2536] border border-status-critical/30 text-status-critical px-3 py-1.5 rounded-sm text-xs font-bold font-technical-mono">12 CRITICAL</span>
+<span class="bg-[#1C2536] border border-slate-700 text-slate-400 px-3 py-1.5 rounded-sm text-xs font-bold font-technical-mono">45 ACTIVE</span>
+</div>
+<button class="border border-[#9FEF00] text-[#9FEF00] px-4 py-1.5 rounded text-sm hover:bg-[#9FEF00]/10 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                        מסננים
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Stats (Top Row) -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+<div class="col-span-12 md:col-span-4 bg-surface-card border border-border-subtle p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-1 h-full bg-status-critical"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Critical Alerts</span>
+<span class="material-symbols-outlined text-status-critical" data-weight="fill">dangerous</span>
+</div>
+<div class="text-4xl font-bold text-text-primary mb-2">12</div>
+<div class="w-full bg-[#111927] h-1 rounded-full overflow-hidden">
+<div class="bg-status-critical h-full w-[65%]"></div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-card border border-border-subtle p-6 relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Mean Time to Resolve</span>
+<span class="material-symbols-outlined text-status-success">timer</span>
+</div>
+<div class="text-4xl font-bold text-text-primary mb-2">42m</div>
+<div class="text-xs text-status-success flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_down</span>
+<span>12% שיפור מהשבוע שעבר</span>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-card border border-border-subtle p-6 relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-400 text-xs font-bold uppercase tracking-wider">System Health</span>
+<span class="material-symbols-outlined text-[#9FEF00]">bolt</span>
+</div>
+<div class="text-4xl font-bold text-text-primary mb-2">99.8%</div>
+<div class="text-xs text-slate-500 uppercase tracking-widest">Global Infrastructure</div>
+</div>
+</div>
+<!-- Alert Table Container -->
+<div class="bg-surface-card border border-border-subtle rounded-sm">
+<div class="p-4 border-b border-border-subtle flex justify-between items-center bg-[#1C2536]/30">
+<div class="flex items-center gap-4">
+<span class="text-sm font-bold text-slate-300">רשימת התראות</span>
+<div class="h-4 w-px bg-slate-700"></div>
+<div class="flex gap-2">
+<button class="text-[10px] uppercase font-bold tracking-tighter text-[#9FEF00] border-b border-[#9FEF00]">All</button>
+<button class="text-[10px] uppercase font-bold tracking-tighter text-slate-500 hover:text-slate-300 transition-colors">Critical</button>
+<button class="text-[10px] uppercase font-bold tracking-tighter text-slate-500 hover:text-slate-300 transition-colors">Pending</button>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-slate-500 text-sm hover:text-slate-200">download</button>
+<button class="material-symbols-outlined text-slate-500 text-sm hover:text-slate-200">refresh</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right border-collapse font-assistant">
+<thead>
+<tr class="text-[11px] uppercase tracking-widest text-slate-500 bg-[#1C2536]/20">
+<th class="px-6 py-4 font-semibold">חומרה</th>
+<th class="px-6 py-4 font-semibold">שם התראה</th>
+<th class="px-6 py-4 font-semibold text-left">מקור (Source)</th>
+<th class="px-6 py-4 font-semibold">זמן אירוע</th>
+<th class="px-6 py-4 font-semibold">סטטוס</th>
+<th class="px-6 py-4 font-semibold text-center">פעולות</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#1C2536]">
+<!-- Row 1 -->
+<tr class="hover:bg-[#1C2536]/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-status-critical text-lg">exclamation</span>
+<span class="font-bold text-slate-200 text-sm">CRITICAL</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-semibold text-text-primary">Potential SQL Injection Detected</div>
+<div class="text-[10px] text-slate-500 font-technical-mono">CVE-2024-3312</div>
+</td>
+<td class="px-6 py-4 text-left">
+<span class="font-technical-mono text-sm text-[#9FEF00]">Web-Server-01</span>
+</td>
+<td class="px-6 py-4 font-technical-mono text-xs text-slate-400">14:23:02 24/05/24</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-status-critical/10 text-status-critical border border-status-critical/30 rounded-sm text-[10px] font-bold">CRITICAL</span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="bg-[#9FEF00] text-[#111927] px-4 py-1.5 rounded text-xs font-bold hover:brightness-110 active:scale-95 transition-all">חקור אירוע</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-[#1C2536]/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400 text-lg">warning</span>
+<span class="font-bold text-slate-200 text-sm">MEDIUM</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-semibold text-text-primary">Unauthorized Admin Login Attempt</div>
+<div class="text-[10px] text-slate-500 font-technical-mono">AUTH-ERR-99</div>
+</td>
+<td class="px-6 py-4 text-left">
+<span class="font-technical-mono text-sm text-[#9FEF00]">Auth-Gateway-DB</span>
+</td>
+<td class="px-6 py-4 font-technical-mono text-xs text-slate-400">13:58:44 24/05/24</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-slate-800 text-slate-400 border border-slate-700 rounded-sm text-[10px] font-bold uppercase">Medium</span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="bg-[#9FEF00] text-[#111927] px-4 py-1.5 rounded text-xs font-bold hover:brightness-110 transition-all">חקור אירוע</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-[#1C2536]/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500 text-lg">info</span>
+<span class="font-bold text-slate-200 text-sm">LOW</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-semibold text-text-primary">Unusual Port Scan Pattern</div>
+<div class="text-[10px] text-slate-500 font-technical-mono">NW-SCAN-01</div>
+</td>
+<td class="px-6 py-4 text-left">
+<span class="font-technical-mono text-sm text-[#9FEF00]">Internal-VLAN-10</span>
+</td>
+<td class="px-6 py-4 font-technical-mono text-xs text-slate-400">13:15:20 24/05/24</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-slate-900 text-slate-500 border border-slate-800 rounded-sm text-[10px] font-bold uppercase">Low</span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="bg-[#9FEF00] text-[#111927] px-4 py-1.5 rounded text-xs font-bold hover:brightness-110 transition-all">חקור אירוע</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-[#1C2536]/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-status-critical text-lg">exclamation</span>
+<span class="font-bold text-slate-200 text-sm">CRITICAL</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-semibold text-text-primary">Ransomware Signature Detected</div>
+<div class="text-[10px] text-slate-500 font-technical-mono">AV-DET-4402</div>
+</td>
+<td class="px-6 py-4 text-left">
+<span class="font-technical-mono text-sm text-[#9FEF00]">End-Point-772</span>
+</td>
+<td class="px-6 py-4 font-technical-mono text-xs text-slate-400">12:44:10 24/05/24</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-status-critical/10 text-status-critical border border-status-critical/30 rounded-sm text-[10px] font-bold uppercase">Critical</span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="bg-[#9FEF00] text-[#111927] px-4 py-1.5 rounded text-xs font-bold hover:brightness-110 transition-all">חקור אירוע</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-4 border-t border-border-subtle flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-widest font-assistant">
+<div>Showing 1 - 4 of 12 Alerts</div>
+<div class="flex gap-4">
+<button class="hover:text-[#9FEF00]">Previous</button>
+<div class="flex gap-2">
+<span class="text-[#9FEF00]">01</span>
+<span>02</span>
+<span>03</span>
+</div>
+<button class="hover:text-[#9FEF00]">Next</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-[#111927] text-slate-500 font-assistant text-[10px] uppercase tracking-widest w-full border-t border-[#1C2536] flat no shadows flex justify-between items-center px-8 py-4 fixed bottom-0 z-50">
+<div>© 2024 SOC-Next Technical Operations. Restricted Access.</div>
+<div class="flex gap-6">
+<a class="hover:text-slate-300 transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-slate-300 transition-colors" href="#">Terms of Engagement</a>
+<a class="hover:text-slate-300 transition-colors" href="#">SLA</a>
+<a class="hover:text-slate-300 transition-colors text-[#9FEF00]" href="#">Documentation</a>
+</div>
+</footer>
+</body></html>

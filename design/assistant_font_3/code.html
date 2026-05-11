@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&amp;family=Fira+Code:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#bdc6dd",
+                    "surface-container-highest": "#313728",
+                    "on-tertiary": "#352b4e",
+                    "on-background": "#dfe5d0",
+                    "on-primary-container": "#436900",
+                    "tertiary": "#faf3ff",
+                    "tertiary-fixed-dim": "#cec0ec",
+                    "secondary-fixed-dim": "#bdc6dd",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "on-primary-fixed": "#111f00",
+                    "on-tertiary-fixed-variant": "#4c4165",
+                    "inverse-on-surface": "#2d3224",
+                    "on-secondary-fixed": "#121c2c",
+                    "background-deep": "#111927",
+                    "tertiary-container": "#e1d2ff",
+                    "error-container": "#93000a",
+                    "background": "#101509",
+                    "inverse-surface": "#dfe5d0",
+                    "surface-terminal": "#0D1117",
+                    "surface-container-lowest": "#0b1005",
+                    "surface": "#101509",
+                    "surface-dim": "#101509",
+                    "secondary-container": "#40495c",
+                    "inverse-primary": "#436900",
+                    "primary-fixed": "#a8f91a",
+                    "on-tertiary-fixed": "#201537",
+                    "status-critical": "#FF4D4D",
+                    "on-error": "#690005",
+                    "outline": "#8b947a",
+                    "surface-container": "#1c2114",
+                    "secondary-fixed": "#dae2fa",
+                    "status-success": "#9FEF00",
+                    "text-primary": "#F3F4F6",
+                    "on-surface-variant": "#c1caae",
+                    "primary-fixed-dim": "#91db00",
+                    "outline-variant": "#414a34",
+                    "surface-card": "#1C2536",
+                    "on-secondary-fixed-variant": "#3e4759",
+                    "surface-container-low": "#181d10",
+                    "surface-variant": "#313728",
+                    "primary-container": "#9fef00",
+                    "on-secondary": "#283042",
+                    "on-primary": "#213600",
+                    "on-surface": "#dfe5d0",
+                    "primary": "#e3ffb8",
+                    "tertiary-fixed": "#e9ddff",
+                    "surface-bright": "#363b2c",
+                    "surface-container-high": "#262c1e",
+                    "on-tertiary-container": "#64587f",
+                    "surface-tint": "#91db00",
+                    "on-secondary-container": "#afb8cf",
+                    "border-subtle": "#1C2536",
+                    "on-primary-fixed-variant": "#324f00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "container-padding": "24px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "32px"
+            },
+            "fontFamily": {
+                    "technical-mono": ["Fira Code", "monospace"],
+                    "headline-lg": ["Assistant"],
+                    "body-lg": ["Assistant"],
+                    "headline-xl": ["Assistant"],
+                    "label-caps": ["Assistant"],
+                    "body-md": ["Assistant"],
+                    "headline-md": ["Assistant"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Assistant', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background-color: #9FEF00;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111927;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1C2536;
+            border-radius: 10px;
+        }
+        .glow-border:focus-within {
+            border-color: #9FEF00;
+            box-shadow: 0 0 8px rgba(159, 239, 0, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background-deep text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#111927] text-[#9FEF00] font-headline-md tracking-tight flex justify-between items-center px-6 w-full h-16 border-b border-[#1C2536] fixed top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-black tracking-tighter text-[#9FEF00] uppercase">SOC-Next</span>
+<div class="h-8 w-px bg-border-subtle hidden md:block"></div>
+<div class="flex items-center gap-4 text-white">
+<span class="material-symbols-outlined text-[#9FEF00]">security</span>
+<div class="flex flex-col">
+<span class="font-headline-md text-sm leading-tight text-text-primary">תרחיש פעיל: חשד להזרקת SQL</span>
+<span class="text-[10px] text-slate-400 uppercase tracking-widest font-technical-mono">Scenario ID: 2024-SQLi-09</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-6">
+<div class="flex flex-col items-center">
+<span class="text-[10px] text-slate-400 uppercase tracking-widest">זמן נותר</span>
+<span class="font-technical-mono text-[#9FEF00] text-lg">14:52</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-[10px] text-slate-400 uppercase tracking-widest">צבירת XP</span>
+<span class="font-technical-mono text-status-success text-lg">+850</span>
+</div>
+</div>
+<div class="flex items-center gap-3 border-r border-[#1C2536] pr-6">
+<button class="material-symbols-outlined text-slate-400 hover:text-[#9FEF00] transition-colors">terminal</button>
+<button class="material-symbols-outlined text-slate-400 hover:text-[#9FEF00] transition-colors">notifications</button>
+<button class="material-symbols-outlined text-slate-400 hover:text-[#9FEF00] transition-colors">settings</button>
+<img alt="Analyst profile" class="w-8 h-8 rounded border border-[#9FEF00]" data-alt="A close-up high-resolution photograph of a professional cybersecurity analyst's profile picture. The lighting is moody and dramatic with blue and green neon highlights reflecting off their glasses. The background is a dark, tech-oriented environment with subtle grid patterns. The overall aesthetic is professional, high-stakes, and modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTGwdFtYVyHFvCTUy4_t9DPCF67Gkw7zA2hMLwTcXGJB2HFhHv7iaXt49AIiDL8wKIdoGT81MwQd9I_NjkcrvCi7yJp7VPLpdLpO4q6-yvRkGr39jt1Hj6czvLObb6BaiEly02kWpj3vORq5Wyfz9Jd6klIxZDAV99aX97f0TDkDe29Fiopq61jP9Q8Ym907_Un7sWr64UFG0exmTL-qMKQ8EyCd_G6FseoQNTad-vC_0ludc_rCspo6hVqYpmd6ljTWEC4-MNJtnr"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-16 h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed right-0 top-16 bottom-0 w-64 bg-[#111927] border-l border-[#1C2536] flex flex-col z-40">
+<div class="p-4 border-b border-[#1C2536] bg-[#1C2536]/50">
+<h3 class="text-sm font-bold text-[#9FEF00] flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">assignment</span>
+                    Playbook: תחקור SQLi
+                </h3>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+<div class="space-y-3">
+<label class="flex items-start gap-3 group cursor-pointer">
+<input checked="" class="mt-1 bg-surface-card border-slate-600 text-status-success rounded focus:ring-0" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm text-slate-200 line-through">זיהוי כתובת IP מקור</span>
+<span class="text-[10px] text-slate-500">הושלם בהצלחה</span>
+</div>
+</label>
+<label class="flex items-start gap-3 group cursor-pointer">
+<input checked="" class="mt-1 bg-surface-card border-slate-600 text-status-success rounded focus:ring-0" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm text-slate-200 line-through">מיפוי נקודות קצה שהותקפו</span>
+<span class="text-[10px] text-slate-500">הושלם בהצלחה</span>
+</div>
+</label>
+<label class="flex items-start gap-3 group cursor-pointer">
+<div class="mt-1 w-4 h-4 border-2 border-[#9FEF00] rounded flex items-center justify-center">
+<div class="w-2 h-2 bg-[#9FEF00]"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm text-[#9FEF00] font-bold">ניתוח מחרוזת השאילתה ב-Logs</span>
+<span class="text-[10px] text-slate-400">משימה נוכחית</span>
+</div>
+</label>
+<label class="flex items-start gap-3 group cursor-pointer">
+<input class="mt-1 bg-surface-card border-slate-700 text-slate-700 rounded opacity-50" disabled="" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm text-slate-500">חסימת ה-IP ב-Firewall</span>
+<span class="text-[10px] text-slate-600">ממתין להשלמה</span>
+</div>
+</label>
+<label class="flex items-start gap-3 group cursor-pointer">
+<input class="mt-1 bg-surface-card border-slate-700 text-slate-700 rounded opacity-50" disabled="" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm text-slate-500">הפקת דוח אירוע סופי</span>
+<span class="text-[10px] text-slate-600">שלב נעול</span>
+</div>
+</label>
+</div>
+<div class="pt-6 border-t border-[#1C2536]">
+<div class="bg-surface-container-highest/20 p-3 rounded border border-surface-container-highest">
+<span class="text-[10px] text-[#9FEF00] font-technical-mono uppercase block mb-1">טיפ מנתח SOC</span>
+<p class="text-xs text-slate-300 leading-relaxed">
+                            חפש תווים כמו <code>'</code>, <code>--</code>, או מילות מפתח כמו <code>UNION SELECT</code> בשדות הקלט של הלוגים.
+                        </p>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-[#1C2536]">
+<button class="w-full bg-[#9FEF00] text-[#111927] py-2 font-bold text-sm uppercase tracking-tighter hover:bg-[#a8f91a] transition-all">סגירת אירוע</button>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="flex-1 mr-64 flex flex-col p-6 gap-6 h-full overflow-hidden">
+<!-- Bento Grid Layout for Simulator Elements -->
+<div class="grid grid-cols-12 grid-rows-6 gap-6 h-full">
+<!-- SIEM Logs Window -->
+<section class="col-span-12 row-span-3 bg-surface-card border border-border-subtle flex flex-col overflow-hidden">
+<div class="px-4 py-2 bg-[#111927] border-b border-border-subtle flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400 text-sm">database</span>
+<span class="text-xs font-bold text-slate-200 uppercase tracking-widest">SIEM Logs Viewer - Elastic Index: logs-prod-*</span>
+</div>
+<div class="flex gap-2">
+<div class="w-2 h-2 rounded-full bg-status-success"></div>
+<div class="w-2 h-2 rounded-full bg-slate-700"></div>
+<div class="w-2 h-2 rounded-full bg-slate-700"></div>
+</div>
+</div>
+<div class="flex-1 overflow-auto p-4 font-technical-mono text-sm custom-scrollbar bg-surface-terminal">
+<table class="w-full text-left rtl:text-right border-collapse">
+<thead>
+<tr class="text-slate-500 border-b border-slate-800">
+<th class="pb-2 font-medium">TIMESTAMP</th>
+<th class="pb-2 font-medium">SOURCE_IP</th>
+<th class="pb-2 font-medium">METHOD</th>
+<th class="pb-2 font-medium">PATH</th>
+<th class="pb-2 font-medium">STATUS</th>
+<th class="pb-2 font-medium">PAYLOAD</th>
+</tr>
+</thead>
+<tbody class="text-slate-300">
+<tr class="border-b border-slate-800/50 hover:bg-[#1C2536] transition-colors">
+<td class="py-2 text-slate-500">2024-05-20 14:32:01</td>
+<td class="py-2 text-[#9FEF00]">192.168.1.45</td>
+<td class="py-2">GET</td>
+<td class="py-2">/api/v1/products</td>
+<td class="py-2 text-status-success">200</td>
+<td class="py-2 truncate max-w-xs">id=102</td>
+</tr>
+<tr class="border-b border-slate-800/50 hover:bg-status-critical/10 transition-colors group">
+<td class="py-2 text-slate-500">2024-05-20 14:32:05</td>
+<td class="py-2 text-status-critical font-bold">45.22.11.90</td>
+<td class="py-2">POST</td>
+<td class="py-2">/login</td>
+<td class="py-2 text-status-critical">500</td>
+<td class="py-2 text-status-critical font-bold truncate max-w-xs">' OR '1'='1' --</td>
+</tr>
+<tr class="border-b border-slate-800/50 hover:bg-status-critical/10 transition-colors">
+<td class="py-2 text-slate-500">2024-05-20 14:32:06</td>
+<td class="py-2 text-status-critical font-bold">45.22.11.90</td>
+<td class="py-2">POST</td>
+<td class="py-2">/login</td>
+<td class="py-2 text-status-critical">500</td>
+<td class="py-2 text-status-critical font-bold truncate max-w-xs">admin' UNION SELECT password FROM users--</td>
+</tr>
+<tr class="border-b border-slate-800/50 hover:bg-[#1C2536] transition-colors">
+<td class="py-2 text-slate-500">2024-05-20 14:32:10</td>
+<td class="py-2 text-[#9FEF00]">192.168.1.12</td>
+<td class="py-2">GET</td>
+<td class="py-2">/assets/main.css</td>
+<td class="py-2 text-status-success">200</td>
+<td class="py-2">-</td>
+</tr>
+<tr class="border-b border-slate-800/50 hover:bg-[#1C2536] transition-colors">
+<td class="py-2 text-slate-500">2024-05-20 14:32:15</td>
+<td class="py-2 text-[#9FEF00]">192.168.1.45</td>
+<td class="py-2">GET</td>
+<td class="py-2">/api/v1/user/profile</td>
+<td class="py-2 text-status-success">200</td>
+<td class="py-2">session_id=A92B1C</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Interactive Terminal Window -->
+<section class="col-span-12 row-span-3 bg-surface-terminal border border-border-subtle flex flex-col glow-border transition-all">
+<div class="px-4 py-2 bg-[#0D1117] border-b border-border-subtle flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#9FEF00] text-sm">terminal</span>
+<span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Shell Terminal - root@soc-station-01: ~</span>
+</div>
+</div>
+<div class="flex-1 p-6 font-technical-mono text-sm overflow-y-auto custom-scrollbar ltr" dir="ltr">
+<div class="space-y-1">
+<p class="text-slate-500">Last login: Mon May 20 14:05:22 on ttys001</p>
+<p class="text-[#9FEF00] underline decoration-dotted">soc-next console v4.2.0-stable</p>
+<div class="py-2"></div>
+<p class="text-slate-200"><span class="text-[#9FEF00]">analyst@unit01</span>:<span class="text-blue-400">~</span>$ whoami</p>
+<p class="text-slate-400">analyst_level_4</p>
+<p class="text-slate-200"><span class="text-[#9FEF00]">analyst@unit01</span>:<span class="text-blue-400">~</span>$ curl -X GET "http://internal-db:5432/health"</p>
+<p class="text-status-success">{"status": "healthy", "connections": 142, "uptime": "14d 2h"}</p>
+<p class="text-slate-200"><span class="text-[#9FEF00]">analyst@unit01</span>:<span class="text-blue-400">~</span>$ grep "UNION SELECT" /var/log/nginx/access.log</p>
+<p class="text-status-critical">45.22.11.90 - - [20/May/2024:14:32:06 +0000] "POST /login HTTP/1.1" 500 1242 "-" "admin' UNION SELECT password FROM users--"</p>
+<div class="flex items-center mt-2">
+<p class="text-slate-200"><span class="text-[#9FEF00]">analyst@unit01</span>:<span class="text-blue-400">~</span>$ </p>
+<span class="terminal-cursor"></span>
+<input autofocus="" class="bg-transparent border-none outline-none ring-0 p-0 text-[#9FEF00] font-technical-mono w-full focus:ring-0" type="text"/>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-[#111927] text-slate-500 font-headline-md text-[10px] uppercase tracking-widest flex justify-between items-center px-8 py-4 w-full border-t border-[#1C2536] fixed bottom-0 z-50">
+<div class="flex gap-6">
+<span>© 2024 SOC-Next Technical Operations. Restricted Access.</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-slate-300 transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-slate-300 transition-colors" href="#">Terms of Engagement</a>
+<a class="hover:text-slate-300 transition-colors" href="#">SLA</a>
+<a class="hover:text-slate-300 transition-colors" href="#">Documentation</a>
+</div>
+</footer>
+</body></html>

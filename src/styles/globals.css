@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background-deep: #111927;
+  --color-surface-card: #1C2536;
+  --color-surface-terminal: #0D1117;
+  --color-border-subtle: #222f45;
+  --color-status-success: #9FEF00;
+  --color-status-critical: #FF4D4D;
+  --color-status-warning: #F59E0B;
+  --color-text-primary: #F3F4F6;
+  --color-text-muted: #94A3B8;
+
+  --font-assistant: "Assistant", sans-serif;
+  --font-mono: "Fira Code", monospace;
+  --font-technical-mono: "Fira Code", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  margin: 0;
+  background-color: #111927;
+  color: #F3F4F6;
+  font-family: 'Assistant', sans-serif;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.neon-glow {
+  text-shadow: 0 0 8px rgba(159, 239, 0, 0.6);
+}
+
+.cyber-glow {
+  box-shadow: 0 0 15px rgba(159, 239, 0, 0.2);
+}
+
+.border-neon {
+  border-color: #9FEF00;
+  box-shadow: 0 0 8px rgba(159, 239, 0, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #111927;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2a3a55;
+  border-radius: 2px;
+}
+
+.terminal-cursor::after {
+  content: '_';
+  animation: blink 1s step-end infinite;
+  color: #9FEF00;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.progress-ring__circle {
+  transition: stroke-dashoffset 0.6s ease;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.dot-grid {
+  background-image: radial-gradient(#1C2536 1px, transparent 1px);
+  background-size: 40px 40px;
+}
