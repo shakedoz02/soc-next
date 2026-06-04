@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import PrimaryButton from '../components/ui/PrimaryButton';
 
 const TERMINAL_LINES = [
   '> initializing neural-threat-engine...',
@@ -39,8 +41,15 @@ function TerminalPreview() {
 }
 
 export default function LandingPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const ctaTo = user ? '/lobby' : '/auth';
+
+  // If already authenticated (e.g. after clicking the confirmation email link),
+  // redirect straight to the lobby without showing the landing page.
+  useEffect(() => {
+    if (!loading && user) navigate('/lobby', { replace: true });
+  }, [user, loading, navigate]);
 
   return (
     <div className="min-h-screen bg-[#111927] font-assistant overflow-x-hidden">
@@ -70,12 +79,9 @@ export default function LandingPage() {
             <span className="material-symbols-outlined text-slate-400 hover:text-[#9FEF00] transition-colors cursor-pointer">notifications</span>
             <span className="material-symbols-outlined text-slate-400 hover:text-[#9FEF00] transition-colors cursor-pointer">settings</span>
           </div>
-          <Link
-            to={ctaTo}
-            className="bg-[#9FEF00] text-[#111927] px-4 py-1.5 rounded text-sm font-bold active:scale-95 duration-100 uppercase hover:brightness-110 transition-all"
-          >
+          <PrimaryButton to={ctaTo} className="px-4 py-1.5 text-sm uppercase duration-100">
             Deploy Shell
-          </Link>
+          </PrimaryButton>
         </div>
       </header>
 
@@ -103,12 +109,9 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <Link
-                to={ctaTo}
-                className="bg-[#9FEF00] text-[#111927] px-8 py-4 font-bold text-lg rounded shadow-[0_0_20px_rgba(159,239,0,0.3)] hover:brightness-110 active:scale-95 transition-all"
-              >
+              <PrimaryButton to={ctaTo} className="px-8 py-4 text-lg shadow-[0_0_20px_rgba(159,239,0,0.3)]">
                 התחל תרגול עכשיו
-              </Link>
+              </PrimaryButton>
               <a
                 href="#features"
                 className="border-2 border-[#9FEF00] text-[#9FEF00] px-8 py-4 font-bold text-lg rounded hover:bg-[#9FEF00]/10 active:scale-95 transition-all"
@@ -215,12 +218,9 @@ export default function LandingPage() {
                 <p className="text-slate-300 mb-6 leading-relaxed">
                   הצטרף למאות אנליסטים שכבר מתרגלים ב-SOC-Next
                 </p>
-                <Link
-                  to={ctaTo}
-                  className="bg-[#9FEF00] text-[#111927] px-6 py-2 font-bold rounded self-center active:scale-95 transition-all hover:brightness-110"
-                >
+                <PrimaryButton to={ctaTo} className="px-6 py-2 self-center">
                   הרשמה מהירה
-                </Link>
+                </PrimaryButton>
               </div>
 
             </div>

@@ -1,48 +1,130 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import PageHeader from '../components/ui/PageHeader';
+import XpProgressBar from '../components/ui/XpProgressBar';
+import PrimaryButton from '../components/ui/PrimaryButton';
 
-const ACHIEVEMENTS = [
-  { icon: 'military_tech', label: 'First Responder', desc: 'השלמת חקירה ראשונה', earned: true },
-  { icon: 'speed', label: 'Speed Hunter', desc: 'חקירה תחת 10 דקות', earned: true },
-  { icon: 'shield', label: 'SQL Slayer', desc: 'חסמת מתקפת SQL Injection', earned: true },
-  { icon: 'psychology', label: 'Threat Analyst', desc: 'חקרת 5 תרחישים שונים', earned: false },
-  { icon: 'verified_user', label: 'Perfect Score', desc: 'ניקוד 100 ללא שגיאות', earned: false },
-  { icon: 'workspace_premium', label: 'Senior Analyst', desc: 'הגעת לרמה 10', earned: false },
-];
+// Achievements are derived from real user + investigation data
+function computeAchievements(user, investigations) {
+  const scenarioIds = investigations.map(i => i.scenario_id);
+  const uniqueScenarios = new Set(scenarioIds).size;
+  const hasPerfect = investigations.some(i => i.score >= 100);
+  const hasSpeed   = investigations.some(i => i.elapsed_seconds < 600); // under 10 min
+  const hasSql     = scenarioIds.includes('sql-injection');
 
-const HISTORY = [
-  { id: 'SQL Injection', score: 92, xp: '+460', date: '24/05/2024', status: 'success' },
-  { id: 'Brute Force', score: 78, xp: '+273', date: '22/05/2024', status: 'success' },
-  { id: 'Port Scan', score: 85, xp: '+170', date: '20/05/2024', status: 'success' },
-];
+  return [
+    {
+      icon: 'military_tech',
+      label: 'First Responder',
+      desc: 'השלמת חקירה ראשונה',
+      earned: (user?.sessionsCompleted || 0) >= 1,
+    },
+    {
+      icon: 'speed',
+      label: 'Speed Hunter',
+      desc: 'חקירה תחת 10 דקות',
+      earned: hasSpeed,
+    },
+    {
+      icon: 'shield',
+      label: 'SQL Slayer',
+      desc: 'חסמת מתקפת SQL Injection',
+      earned: hasSql,
+    },
+    {
+      icon: 'psychology',
+      label: 'Threat Analyst',
+      desc: 'חקרת 5 תרחישים שונים',
+      earned: uniqueScenarios >= 5,
+    },
+    {
+      icon: 'verified_user',
+      label: 'Perfect Score',
+      desc: 'ניקוד 100 ללא שגיאות',
+      earned: hasPerfect,
+    },
+    {
+      icon: 'workspace_premium',
+      label: 'Senior Analyst',
+      desc: 'הגעת לרמה 10',
+      earned: (user?.level || 0) >= 10,
+    },
+  ];
+}
+
+const SCENARIO_LABELS = {
+  'sql-injection': 'SQL Injection',
+  'brute-force':   'Brute Force',
+  'ransomware':    'Ransomware',
+  'port-scan':     'Port Scan',
+};
+
+function formatDate(isoString) {
+  if (!isoString) return '—';
+  return new Date(isoString).toLocaleDateString('he-IL', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+  });
+}
+
+function formatDuration(seconds) {
+  if (!seconds) return '—';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
-    signOut();
+  const [investigations, setInvestigations] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    supabase
+      .from('investigations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('completed_at', { ascending: false })
+      .limit(20)
+      .then(({ data, error }) => {
+        if (!error && data) setInvestigations(data);
+        setLoadingHistory(false);
+      });
+  }, [user?.id]);
+
+  const handleSignOut = async () => {
+    await signOut();
     navigate('/');
   };
 
   const xpPercent = Math.round(((user?.xp || 0) / (user?.xpToNext || 1)) * 100);
+  const achievements = computeAchievements(user, investigations);
+  const earnedCount  = achievements.filter(a => a.earned).length;
 
   return (
     <div className="p-8 max-w-5xl">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="text-xs text-slate-500 font-mono uppercase tracking-widest mb-1">חשבון משתמש</div>
-        <h1 className="text-3xl font-bold text-white mb-1">פרופיל ואנליטיקס</h1>
-        <p className="text-slate-400">נהל את הפרופיל שלך ועקוב אחר ההתקדמות</p>
-      </div>
+      <PageHeader
+        eyebrow="חשבון משתמש"
+        title="פרופיל ואנליטיקס"
+        description="נהל את הפרופיל שלך ועקוב אחר ההתקדמות"
+        className="mb-8"
+      />
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Profile Card */}
+        {/* Profile card */}
         <div className="col-span-12 md:col-span-4">
           <div className="bg-[#1C2536] border border-[#222f45] rounded-lg p-6">
             <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-20 h-20 rounded-full bg-[#9FEF00]/10 border-2 border-[#9FEF00]/40 flex items-center justify-center text-[#9FEF00] text-3xl font-black mb-4">
-                {user?.name?.[0] || 'A'}
+              <div
+                className="w-20 h-20 rounded-full bg-[#9FEF00]/10 border-2 border-[#9FEF00]/40 flex items-center justify-center text-[#9FEF00] text-3xl font-black mb-4"
+                aria-label={`אות ראשונה של שם: ${user?.name?.[0] || 'A'}`}
+              >
+                {user?.name?.[0]?.toUpperCase() || 'A'}
               </div>
               <h2 className="text-white font-bold text-xl">{user?.name}</h2>
               <p className="text-slate-500 text-sm">{user?.email}</p>
@@ -51,29 +133,26 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* XP */}
+            {/* XP bar */}
             <div className="mb-5">
               <div className="flex justify-between text-xs mb-2">
                 <span className="text-slate-500 font-mono uppercase">Level {user?.level}</span>
                 <span className="text-[#9FEF00] font-mono">{xpPercent}%</span>
               </div>
-              <div className="w-full h-2 bg-[#111927] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#9FEF00] rounded-full transition-all duration-700"
-                  style={{ width: `${xpPercent}%` }}
-                />
-              </div>
-              <div className="flex justify-between mt-1 text-[10px] text-slate-600 font-mono">
-                <span>{user?.xp?.toLocaleString()} XP</span>
-                <span>{user?.xpToNext?.toLocaleString()} XP</span>
-              </div>
+              <XpProgressBar
+                xp={user?.xp}
+                xpToNext={user?.xpToNext}
+                percent={xpPercent}
+                labelClassName="mt-1 text-[10px] text-slate-600 font-mono"
+              />
             </div>
 
             <div className="space-y-3 text-sm">
               {[
-                { label: 'משמרות הושלמו', value: user?.sessionsCompleted },
-                { label: 'דיוק ממוצע', value: `${user?.accuracy}%` },
-                { label: 'XP סה"כ', value: user?.xp?.toLocaleString() },
+                { label: 'משמרות הושלמו', value: user?.sessionsCompleted ?? 0 },
+                { label: 'דיוק ממוצע',    value: `${Number(user?.accuracy || 0).toFixed(1)}%` },
+                { label: 'XP סה"כ',        value: (user?.xp || 0).toLocaleString() },
+                { label: 'הישגים',          value: `${earnedCount} / ${achievements.length}` },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between items-center border-b border-[#222f45] pb-2">
                   <span className="text-slate-500">{label}</span>
@@ -85,8 +164,9 @@ export default function ProfilePage() {
             <button
               onClick={handleSignOut}
               className="mt-6 w-full border border-red-500/30 text-red-400 py-2 rounded text-sm font-semibold hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
+              aria-label="יציאה מהמערכת"
             >
-              <span className="material-symbols-outlined text-base">logout</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">logout</span>
               יציאה מהמערכת
             </button>
           </div>
@@ -94,70 +174,104 @@ export default function ProfilePage() {
           {/* Subscription */}
           <div className="bg-[#1C2536] border border-[#9FEF00]/20 rounded-lg p-5 mt-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined text-[#9FEF00] text-base">workspace_premium</span>
+              <span className="material-symbols-outlined text-[#9FEF00] text-base" aria-hidden="true">workspace_premium</span>
               <span className="text-sm font-bold text-white">תוכנית Free</span>
             </div>
             <p className="text-xs text-slate-500 mb-4">שדרג לPro לגישה לכל התרחישים ודוחות מתקדמים</p>
-            <button className="w-full bg-[#9FEF00] text-[#111927] py-2 rounded text-sm font-bold hover:brightness-110 active:scale-95 transition-all">
+            <PrimaryButton disabled className="w-full py-2 text-sm opacity-60 cursor-not-allowed">
               שדרג ל-Pro (בקרוב)
-            </button>
+            </PrimaryButton>
           </div>
         </div>
 
-        {/* Right Column */}
+        {/* Right column */}
         <div className="col-span-12 md:col-span-8 space-y-6">
           {/* History */}
           <div className="bg-[#1C2536] border border-[#222f45] rounded-lg">
             <div className="p-4 border-b border-[#222f45] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#9FEF00] text-base">history</span>
+              <span className="material-symbols-outlined text-[#9FEF00] text-base" aria-hidden="true">history</span>
               <span className="text-sm font-bold text-slate-300">היסטוריית משמרות</span>
             </div>
-            <div className="divide-y divide-[#1C2536]">
-              {HISTORY.map((h) => (
-                <div key={h.id} className="px-5 py-4 flex items-center justify-between hover:bg-[#111927]/50 transition-colors">
-                  <div>
-                    <div className="text-sm font-semibold text-white">{h.id}</div>
-                    <div className="text-xs text-slate-500 font-mono">{h.date}</div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <div className="text-[10px] text-slate-500 uppercase">ניקוד</div>
-                      <div className="font-mono text-sm text-[#9FEF00]">{h.score}</div>
+
+            {loadingHistory ? (
+              <div className="p-8 text-center text-slate-500 text-sm">טוען היסטוריה...</div>
+            ) : investigations.length === 0 ? (
+              <div className="p-8 text-center">
+                <span className="material-symbols-outlined text-slate-600 text-4xl block mb-2">history</span>
+                <p className="text-slate-500 text-sm">עדיין אין חקירות. התחל את המשמרת הראשונה שלך!</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-[#1C2536]" role="list" aria-label="רשימת חקירות">
+                {investigations.map((inv) => (
+                  <div
+                    key={inv.id}
+                    role="listitem"
+                    className="px-5 py-4 flex items-center justify-between hover:bg-[#111927]/50 transition-colors"
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-white">
+                        {inv.scenario_title || SCENARIO_LABELS[inv.scenario_id] || inv.scenario_id}
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        {formatDate(inv.completed_at)} · {formatDuration(inv.elapsed_seconds)}
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-[10px] text-slate-500 uppercase">XP</div>
-                      <div className="font-mono text-sm text-[#9FEF00]">{h.xp}</div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <div className="text-[10px] text-slate-500 uppercase">ניקוד</div>
+                        <div className={`font-mono text-sm font-bold ${inv.score >= 80 ? 'text-[#9FEF00]' : inv.score >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+                          {inv.score}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[10px] text-slate-500 uppercase">XP</div>
+                        <div className="font-mono text-sm text-[#9FEF00]">+{inv.xp_earned}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[10px] text-slate-500 uppercase">שגיאות</div>
+                        <div className={`font-mono text-sm ${inv.mistakes === 0 ? 'text-[#9FEF00]' : 'text-red-400'}`}>
+                          {inv.mistakes}
+                        </div>
+                      </div>
+                      <span className="px-2 py-1 bg-[#9FEF00]/10 border border-[#9FEF00]/30 text-[#9FEF00] text-[10px] font-bold rounded uppercase">
+                        הושלם
+                      </span>
                     </div>
-                    <span className="px-2 py-1 bg-[#9FEF00]/10 border border-[#9FEF00]/30 text-[#9FEF00] text-[10px] font-bold rounded uppercase">
-                      הושלם
-                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Achievements */}
           <div className="bg-[#1C2536] border border-[#222f45] rounded-lg">
-            <div className="p-4 border-b border-[#222f45] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#9FEF00] text-base">military_tech</span>
-              <span className="text-sm font-bold text-slate-300">הישגים</span>
+            <div className="p-4 border-b border-[#222f45] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#9FEF00] text-base" aria-hidden="true">military_tech</span>
+                <span className="text-sm font-bold text-slate-300">הישגים</span>
+              </div>
+              <span className="text-xs text-slate-500 font-mono">{earnedCount}/{achievements.length} נרכשו</span>
             </div>
-            <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-              {ACHIEVEMENTS.map(({ icon, label, desc, earned }) => (
+            <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-3" role="list" aria-label="הישגים">
+              {achievements.map(({ icon, label, desc, earned }) => (
                 <div
                   key={label}
+                  role="listitem"
+                  aria-label={`${label}: ${earned ? 'הושג' : 'לא הושג'}`}
                   className={`p-4 rounded border transition-all ${
                     earned
                       ? 'bg-[#9FEF00]/5 border-[#9FEF00]/30'
                       : 'bg-[#111927]/50 border-[#222f45] opacity-40'
                   }`}
                 >
-                  <span className={`material-symbols-outlined text-2xl ${earned ? 'text-[#9FEF00]' : 'text-slate-600'}`}>
+                  <span className={`material-symbols-outlined text-2xl ${earned ? 'text-[#9FEF00]' : 'text-slate-600'}`} aria-hidden="true">
                     {icon}
                   </span>
                   <div className="mt-2 text-xs font-bold text-white">{label}</div>
                   <div className="text-[10px] text-slate-500 mt-1">{desc}</div>
+                  {earned && (
+                    <div className="mt-2 text-[9px] text-[#9FEF00] font-mono uppercase tracking-wider">✔ הושג</div>
+                  )}
                 </div>
               ))}
             </div>

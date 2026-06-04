@@ -1,46 +1,22 @@
-const SEV_CONFIG = {
-  CRITICAL: {
-    text: 'text-red-400',
-    icon: 'dangerous',
-    iconColor: 'text-red-400',
-    badgeBg: 'bg-red-500/10',
-    badgeText: 'text-red-400',
-    badgeBorder: 'border-red-500/30',
-  },
-  HIGH: {
-    text: 'text-orange-400',
-    icon: 'warning',
-    iconColor: 'text-orange-400',
-    badgeBg: 'bg-orange-500/10',
-    badgeText: 'text-orange-400',
-    badgeBorder: 'border-orange-500/30',
-  },
-  MEDIUM: {
-    text: 'text-yellow-400',
-    icon: 'warning',
-    iconColor: 'text-yellow-400',
-    badgeBg: 'bg-slate-800',
-    badgeText: 'text-slate-400',
-    badgeBorder: 'border-slate-700',
-  },
-  LOW: {
-    text: 'text-slate-400',
-    icon: 'info',
-    iconColor: 'text-slate-500',
-    badgeBg: 'bg-slate-900',
-    badgeText: 'text-slate-500',
-    badgeBorder: 'border-slate-800',
-  },
+import { memo } from 'react';
+import SeverityBadge from './ui/SeverityBadge';
+import PrimaryButton from './ui/PrimaryButton';
+
+const SEV_ICON = {
+  CRITICAL: { icon: 'dangerous', iconColor: 'text-red-400', text: 'text-red-400' },
+  HIGH:     { icon: 'warning',   iconColor: 'text-orange-400', text: 'text-orange-400' },
+  MEDIUM:   { icon: 'warning',   iconColor: 'text-yellow-400', text: 'text-yellow-400' },
+  LOW:      { icon: 'info',      iconColor: 'text-slate-500',  text: 'text-slate-400' },
 };
 
-export default function AlertRow({ severity, timestamp, source, title, cve, onInvestigate }) {
-  const s = SEV_CONFIG[severity] || SEV_CONFIG.LOW;
+function AlertRow({ severity, timestamp, source, title, cve, onInvestigate }) {
+  const s = SEV_ICON[severity] || SEV_ICON.LOW;
 
   return (
     <tr className="hover:bg-[#1C2536]/50 transition-colors group">
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
-          <span className={`material-symbols-outlined text-lg ${s.iconColor}`}>{s.icon}</span>
+          <span className={`material-symbols-outlined text-lg ${s.iconColor}`} aria-hidden="true">{s.icon}</span>
           <span className={`font-bold text-sm ${s.text}`}>{severity}</span>
         </div>
       </td>
@@ -53,18 +29,19 @@ export default function AlertRow({ severity, timestamp, source, title, cve, onIn
       </td>
       <td className="px-6 py-4 font-technical-mono text-xs text-slate-400">{timestamp}</td>
       <td className="px-6 py-4">
-        <span className={`px-2 py-1 ${s.badgeBg} ${s.badgeText} border ${s.badgeBorder} rounded-sm text-[10px] font-bold uppercase`}>
-          {severity}
-        </span>
+        <SeverityBadge severity={severity} />
       </td>
       <td className="px-6 py-4 text-center">
-        <button
+        <PrimaryButton
           onClick={onInvestigate}
-          className="bg-[#9FEF00] text-[#111927] px-4 py-1.5 rounded text-xs font-bold hover:brightness-110 active:scale-95 transition-all"
+          aria-label={`חקור אירוע: ${title}`}
+          className="px-4 py-1.5 text-xs"
         >
           חקור אירוע
-        </button>
+        </PrimaryButton>
       </td>
     </tr>
   );
 }
+
+export default memo(AlertRow);
