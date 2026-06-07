@@ -49,18 +49,47 @@ function authErrorMessage(error) {
   return error?.message || 'אירעה שגיאה. נסה שוב.';
 }
 
+async function fetchAndMergeProfile(authUser) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, xp, level, xp_to_next, rank, sessions_completed, accuracy')
+    .eq('id', authUser.id)
+    .single();
+
+  if (!profile) return authUser;
+
+  return {
+    ...authUser,
+    name:              profile.name,
+    xp:                profile.xp,
+    level:             profile.level,
+    xpToNext:          profile.xp_to_next,
+    rank:              profile.rank,
+    sessionsCompleted: profile.sessions_completed,
+    accuracy:          Number(profile.accuracy),
+  };
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        setUser(await fetchAndMergeProfile(session.user));
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        setUser(await fetchAndMergeProfile(session.user));
+      } else {
+        setUser(null);
+      }
     });
 
     return () => subscription.unsubscribe();
