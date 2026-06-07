@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { toast } from '../components/Toast';
 import { SCENARIOS } from '../data/scenarios';
 import { useAuth } from '../contexts/AuthContext';
 import { useTerminal } from '../hooks/useTerminal';
 import { useInvestigationTimer } from '../hooks/useInvestigationTimer';
+import { useScenarioVariant } from '../hooks/useScenarioVariant';
 import SiemLogsViewer from '../components/investigation/SiemLogsViewer';
 import TerminalPanel from '../components/investigation/TerminalPanel';
 import PlaybookPanel from '../components/investigation/PlaybookPanel';
@@ -18,7 +19,23 @@ export default function InvestigationLabPage() {
 
   const scenario = SCENARIOS.find(s => s.id === scenarioId);
 
-  const terminal     = useTerminal(scenario);
+  const { variant, logs: variantLogs, loading: variantLoading, error: variantError } =
+    useScenarioVariant(scenarioId, user?.level ?? 1);
+
+  const runtimeScenario = useMemo(() => {
+    if (!scenario || !variant) return null;
+    return {
+      ...scenario,
+      logs: variantLogs,
+      attackerIP: variant.attacker_ip,
+      solution: {
+        commands: variant.solution_commands,
+        keywords: variant.solution_keywords,
+      },
+    };
+  }, [scenario, variant, variantLogs]);
+
+  const terminal     = useTerminal(runtimeScenario);
   const timer        = useInvestigationTimer(!terminal.finished);
 
   // React to terminal.finished becoming true (avoids stale-closure / circular-dep)
@@ -59,6 +76,30 @@ export default function InvestigationLabPage() {
 
   if (!scenario) return <Navigate to="/alerts" replace />;
 
+  if (variantError) {
+    return (
+      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-4 font-assistant bg-[#0D1117]">
+        <span className="material-symbols-outlined text-red-400 text-4xl">error</span>
+        <p className="text-red-400 text-sm font-technical-mono">{variantError}</p>
+        <button
+          onClick={() => navigate('/alerts')}
+          className="border border-[#1C2536] text-slate-400 px-4 py-2 rounded text-xs hover:text-white hover:border-slate-500 transition-colors"
+        >
+          חזרה לאזעקות
+        </button>
+      </div>
+    );
+  }
+
+  if (variantLoading || !runtimeScenario) {
+    return (
+      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-4 font-assistant bg-[#0D1117]">
+        <span className="material-symbols-outlined text-[#9FEF00] text-4xl animate-spin">progress_activity</span>
+        <p className="text-slate-400 text-sm font-technical-mono tracking-widest uppercase">טוען תרחיש...</p>
+      </div>
+    );
+  }
+
   const scoreColor =
     terminal.score >= 70 ? 'text-[#9FEF00]' :
     terminal.score >= 40 ? 'text-yellow-400' : 'text-red-400';
@@ -88,7 +129,7 @@ export default function InvestigationLabPage() {
             <div className="flex flex-col items-center">
               <span className="text-[10px] text-slate-400 uppercase tracking-widest">ניקוד</span>
               <span className={`font-technical-mono text-lg font-bold ${scoreColor}`}>
-                {terminal.score}
+                {terminal.firstCommandExecuted ? terminal.score : '--'}
               </span>
             </div>
             <div className="flex flex-col items-center">
@@ -111,7 +152,7 @@ export default function InvestigationLabPage() {
       <div className="flex flex-1 overflow-hidden" dir="ltr">
         <div className="flex-1 flex flex-col overflow-hidden">
           <SiemLogsViewer
-            scenario={scenario}
+            scenario={runtimeScenario}
             activeLog={activeLog}
             onLogSelect={setActiveLog}
           />

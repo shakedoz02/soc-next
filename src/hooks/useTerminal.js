@@ -17,7 +17,7 @@ const INITIAL_FINAL = null;
 
 export function useTerminal(scenario) {
   const [history, setHistory] = useState([
-    { type: 'system', text: `SOC-Next Terminal v2.4 — Scenario: ${scenario?.title || 'Unknown'}` },
+    { type: 'system', text: `SOC-Next Terminal v2.4 — Scenario: ${scenario?.title ?? 'Unknown'}` },
     { type: 'system', text: 'Type "help" for available commands. Good luck, analyst.' },
     { type: 'prompt', text: '' },
   ]);
@@ -30,6 +30,7 @@ export function useTerminal(scenario) {
   const [executedCmds, setExecutedCmds] = useState([]);
   const [finished, setFinished]         = useState(false);
   const [finalState, setFinalState]     = useState(INITIAL_FINAL);
+  const [firstCommandExecuted, setFirstCommandExecuted] = useState(false);
 
   const push = (lines) =>
     setHistory(h => [...h.slice(0, -1), ...lines, { type: 'prompt', text: '' }]);
@@ -37,13 +38,13 @@ export function useTerminal(scenario) {
   // Checks solution.commands for a matching entry and, if found, appends a step
   // completion message to lines and updates completedSteps / executedCmds state.
   const tryCompleteStep = (command, arg, lines) => {
-    const entry = scenario.solution.commands.find(e =>
+    const entry = scenario?.solution?.commands?.find(e =>
       e.cmd.toLowerCase().startsWith(command) && e.cmd.toLowerCase().includes(arg)
     );
     if (!entry) return;
     lines.push({
       type: 'success',
-      text: `  ► שלב ${entry.stepIndex + 1} הושלם: ${scenario.playbook[entry.stepIndex]?.title}`,
+      text: `  ► שלב ${entry.stepIndex + 1} הושלם: ${scenario?.playbook?.[entry.stepIndex]?.title}`,
     });
     setCompletedSteps(prev => prev.includes(entry.stepIndex) ? prev : [...prev, entry.stepIndex]);
     setExecutedCmds(prev => prev.includes(entry.cmd) ? prev : [...prev, entry.cmd]);
@@ -60,6 +61,9 @@ export function useTerminal(scenario) {
     const command = parts[0];
     const arg     = parts[1] || '';
     const lines   = [{ type: 'input', text: `$ ${cmd}` }];
+    
+    // Mark that first command has been executed
+    setFirstCommandExecuted(true);
 
     if (command === 'help') {
       HELP_LINES.forEach(t => lines.push({ type: 'output', text: t }));
@@ -93,7 +97,7 @@ export function useTerminal(scenario) {
         setScore(s => Math.max(0, s - 5));
         setMistakes(m => m + 1);
       } else {
-        const isCorrect = scenario.solution.keywords.some(k => arg.includes(k));
+        const isCorrect = scenario?.solution?.keywords?.some(k => arg.includes(k)) ?? false;
         if (isCorrect) {
           lines.push({ type: 'success', text: `✔ ${command.toUpperCase()} ${arg} — בוצע בהצלחה` });
           lines.push({ type: 'success', text: `  ► כתובת IP ${arg} נחסמה בחומת האש` });
@@ -112,12 +116,12 @@ export function useTerminal(scenario) {
         setScore(currentScore => {
           setMistakes(currentMistakes => {
             setExecutedCmds(currentCmds => {
-              const allDone = scenario.solution.commands.every(entry =>
+              const allDone = scenario?.solution?.commands?.every(entry =>
                 currentSteps.includes(entry.stepIndex)
-              );
+              ) ?? false;
 
               if (allDone || currentSteps.length > 0) {
-                const finalScore = Math.max(0, currentScore - currentMistakes * 5);
+                const finalScore = currentScore;
                 lines.push({ type: 'success', text: '✔ הכרטיס נסגר. מעביר לדו"ח...' });
                 lines.push({ type: 'success', text: `  ► ניקוד סופי: ${finalScore}` });
 
@@ -148,7 +152,7 @@ export function useTerminal(scenario) {
     push(lines);
   }, [scenario]);
 
-  const currentScore = Math.max(0, score - mistakes * 5);
+  const currentScore = score;
 
   return {
     history,
@@ -160,5 +164,6 @@ export function useTerminal(scenario) {
     mistakes,
     finished,
     finalState,      // { score, mistakes, commands } once finished, else null
+    firstCommandExecuted,
   };
 }
