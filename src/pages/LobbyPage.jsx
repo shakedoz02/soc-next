@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { SCENARIOS } from '../data/scenarios';
 import SeverityBadge from '../components/ui/SeverityBadge';
 import StatCard from '../components/ui/StatCard';
@@ -6,9 +8,75 @@ import PageHeader from '../components/ui/PageHeader';
 import XpProgressBar from '../components/ui/XpProgressBar';
 import PrimaryButton from '../components/ui/PrimaryButton';
 
+function rowToProfile(p) {
+  return {
+    id:                p.id,
+    email:             p.email,
+    name:              p.name,
+    level:             p.level,
+    xp:                p.xp,
+    xpToNext:          p.xp_to_next,
+    rank:              p.rank,
+    sessionsCompleted: p.sessions_completed,
+    accuracy:          Number(p.accuracy),
+  };
+}
+
 export default function LobbyPage() {
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const [scenarios, setScenarios] = useState([]);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!authUser?.id) return;
+
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+
+      const [scenariosRes, profileRes] = await Promise.all([
+        supabase.from('scenarios').select('*').eq('is_active', true),
+        supabase.from('profiles').select('*').eq('id', authUser.id).single(),
+      ]);
+
+      const errors = [scenariosRes.error, profileRes.error].filter(Boolean);
+      if (errors.length) {
+        setError('שגיאה בטעינת הנתונים. מציג נתוני גיבוי.');
+      }
+
+      setScenarios(
+        (!scenariosRes.error && scenariosRes.data?.length)
+          ? scenariosRes.data
+          : SCENARIOS
+      );
+
+      setProfile(
+        (!profileRes.error && profileRes.data)
+          ? rowToProfile(profileRes.data)
+          : authUser
+      );
+
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [authUser?.id]);
+
+  const user = profile || authUser;
   const xpPercent = Math.round(((user?.xp || 0) / (user?.xpToNext || 1)) * 100);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <span className="material-symbols-outlined text-[#9FEF00] text-4xl animate-spin">progress_activity</span>
+          <span className="text-slate-400 text-sm">טוען נתונים...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -17,6 +85,13 @@ export default function LobbyPage() {
         title={`שלום, ${user?.name} 👋`}
         description="בחר תרחיש תקיפה להתחלת סימולציה"
       />
+
+      {error && (
+        <div className="mb-6 flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded">
+          <span className="material-symbols-outlined text-base">warning</span>
+          {error}
+        </div>
+      )}
 
       {/* User Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
@@ -46,7 +121,7 @@ export default function LobbyPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {SCENARIOS.map((scenario) => (
+        {scenarios.map((scenario) => (
           <div
             key={scenario.id}
             className="bg-[#1C2536] border border-[#222f45] rounded-lg p-6 hover:border-[#9FEF00]/40 transition-all group"
@@ -58,7 +133,7 @@ export default function LobbyPage() {
               <SeverityBadge severity={scenario.difficulty} />
             </div>
 
-            <h3 className="text-white font-bold text-lg mb-1">{scenario.titleHe}</h3>
+            <h3 className="text-white font-bold text-lg mb-1">{scenario.titleHe || scenario.title_he}</h3>
             <p className="text-xs text-slate-500 font-mono mb-1">{scenario.title}</p>
             <p className="text-slate-400 text-sm leading-relaxed mb-5">{scenario.description}</p>
 
@@ -70,7 +145,7 @@ export default function LobbyPage() {
                 </div>
                 <div className="text-center">
                   <div className="text-[10px] text-slate-500 uppercase">XP</div>
-                  <div className="text-xs font-mono text-[#9FEF00]">+{scenario.xpReward}</div>
+                  <div className="text-xs font-mono text-[#9FEF00]">+{scenario.xpReward || scenario.xp_reward}</div>
                 </div>
               </div>
               <PrimaryButton to={`/investigate/${scenario.id}`} className="px-5 py-2 text-sm">

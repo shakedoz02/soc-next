@@ -1,5 +1,6 @@
-import { useState, useMemo, memo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { ALERTS } from '../data/scenarios';
 import AlertRow from '../components/AlertRow';
 
@@ -35,22 +36,71 @@ function FilterButton({ label, active, count, onClick }) {
 
 const MemoFilterButton = memo(FilterButton);
 
+function normalizeAlert(a) {
+  return {
+    id:         a.id,
+    severity:   a.severity,
+    title:      a.title,
+    cve:        a.cve,
+    source:     a.source,
+    timestamp:  a.timestamp || a.created_at,
+    scenarioId: a.scenarioId || a.scenario_id,
+  };
+}
+
 export default function AlertQueuePage() {
   const [filter, setFilter] = useState('הכל');
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    async function fetchAlerts() {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('alerts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fetchError) {
+        setError('שגיאה בטעינת ההתראות. מציג נתוני גיבוי.');
+        setAlerts(ALERTS);
+      } else {
+        setAlerts((data?.length ? data : ALERTS).map(normalizeAlert));
+      }
+
+      setLoading(false);
+    }
+
+    fetchAlerts();
+  }, []);
+
   const filtered = useMemo(
-    () => filter === 'הכל' ? ALERTS : ALERTS.filter(a => a.severity === filter),
-    [filter]
+    () => filter === 'הכל' ? alerts : alerts.filter(a => a.severity === filter),
+    [filter, alerts]
   );
 
   const counts = useMemo(() => {
-    const c = { הכל: ALERTS.length };
-    ALERTS.forEach(a => { c[a.severity] = (c[a.severity] || 0) + 1; });
+    const c = { הכל: alerts.length };
+    alerts.forEach(a => { c[a.severity] = (c[a.severity] || 0) + 1; });
     return c;
-  }, []);
+  }, [alerts]);
 
   const criticalCount = counts.CRITICAL || 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <span className="material-symbols-outlined text-[#9FEF00] text-4xl animate-spin">progress_activity</span>
+          <span className="text-slate-400 text-sm">טוען התראות...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 font-assistant">
@@ -69,10 +119,17 @@ export default function AlertQueuePage() {
             {criticalCount} CRITICAL
           </span>
           <span className="bg-[#1C2536] border border-[#1C2536] text-slate-400 px-3 py-1.5 rounded-sm text-xs font-bold font-technical-mono">
-            {ALERTS.length} ACTIVE
+            {alerts.length} ACTIVE
           </span>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-6 flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded">
+          <span className="material-symbols-outlined text-base">warning</span>
+          {error}
+        </div>
+      )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -84,7 +141,7 @@ export default function AlertQueuePage() {
           </div>
           <div className="text-4xl font-bold text-white mb-2">{criticalCount}</div>
           <div className="w-full bg-[#111927] h-1 rounded-full overflow-hidden">
-            <div className="bg-red-500 h-full" style={{ width: `${Math.min(100, (criticalCount / ALERTS.length) * 100)}%` }} />
+            <div className="bg-red-500 h-full" style={{ width: `${Math.min(100, alerts.length ? (criticalCount / alerts.length) * 100 : 0)}%` }} />
           </div>
         </div>
 
@@ -176,7 +233,7 @@ export default function AlertQueuePage() {
 
         <div className="p-4 border-t border-[#1C2536] flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-widest font-assistant">
           <div aria-live="polite">
-            מציג {filtered.length} מתוך {ALERTS.length} התראות
+            מציג {filtered.length} מתוך {alerts.length} התראות
           </div>
         </div>
       </div>

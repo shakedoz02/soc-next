@@ -1,25 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
-function rowToUser(p) {
-  return {
-    id:                p.id,
-    email:             p.email,
-    name:              p.name,
-    level:             p.level,
-    xp:                p.xp,
-    xpToNext:          p.xp_to_next,
-    rank:              p.rank,
-    sessionsCompleted: p.sessions_completed,
-    accuracy:          Number(p.accuracy),
-  };
-}
-
-// Translate Supabase auth errors into clear, user-facing Hebrew messages.
-// Keyed on error.code (stable) first, then falling back to message text, so a
-// real backend/config problem is surfaced instead of being masked.
 function authErrorMessage(error) {
   const code = error?.code;
   const msg = (error?.message || '').toLowerCase();
@@ -48,115 +31,44 @@ function authErrorMessage(error) {
   return error?.message || 'אירעה שגיאה. נסה שוב.';
 }
 
-async function fetchProfile(userId, { retries = 5, delayMs = 300 } = {}) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    if (data) return rowToUser(data);
-    if (attempt < retries) await new Promise(r => setTimeout(r, delayMs * (attempt + 1)));
-  }
-  return null;
-}
-
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load session on mount
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const profile = await fetchProfile(session.user.id);
-        setUser(profile);
-      }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Keep in sync on login / logout / token refresh
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          const profile = await fetchProfile(session.user.id);
-          if (profile) {
-            setUser(profile);
-          } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-            // Profile trigger hasn't landed yet — set a minimal stub so the
-            // AuthPage useEffect can navigate to /lobby. The full profile loads
-            // the next time the user visits or on the next auth state change.
-            setUser({
-              id:                session.user.id,
-              email:             session.user.email,
-              name:              session.user.user_metadata?.name || 'אנליסט חדש',
-              level:             1,
-              xp:                0,
-              xpToNext:          1000,
-              rank:              'Junior Analyst',
-              sessionsCompleted: 0,
-              accuracy:          0,
-            });
-          } else {
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
-      }
-    );
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = useCallback(async (email, password) => {
+  const signIn = async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: { message: authErrorMessage(error) } };
     return { error: null };
-  }, []);
+  };
 
-  const signUp = useCallback(async (email, password, name) => {
-    const { data, error } = await supabase.auth.signUp({
+  const signUp = async (email, password, name) => {
+    const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { name: name?.trim() || 'אנליסט חדש' },
-      },
+      options: { data: { name: name?.trim() || 'אנליסט חדש' } },
     });
-    console.log('[signUp] error:', error);
-    console.log('[signUp] data.user:', data?.user);
-    console.log('[signUp] data.session:', data?.session);
-    console.log('[signUp] identities:', data?.user?.identities);
     if (error) return { error: { message: authErrorMessage(error) } };
+    return { error: null };
+  };
 
-    // Supabase hides "email already registered" by returning a user with an
-    // empty identities array and no error. Surface it instead of silently
-    // showing a success/confirmation screen.
-    if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-      return { error: { message: 'כתובת אימייל זו כבר רשומה. נסה להתחבר.' } };
-    }
-
-    if (!data?.session) {
-      return { error: null, needsConfirmation: true };
-    }
-
-    await supabase.from('profiles').upsert({
-      id: data.user.id,
-      email: data.user.email,
-      name: data.user.user_metadata?.name || 'אנליסט חדש',
-    });
-
-    return { error: null, needsConfirmation: false };
-  }, []);
-
-  const signOut = useCallback(async () => {
+  const signOut = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-  }, []);
+  };
 
-  // Called after an investigation completes.
-  // Delegates XP calc + DB write to the secure RPC function.
-  const saveInvestigation = useCallback(async ({
+  const saveInvestigation = async ({
     scenarioId, scenarioTitle, score, xpEarned, elapsed, mistakes, commands,
   }) => {
     if (!user) return { error: { message: 'לא מחובר' } };
@@ -177,7 +89,6 @@ export function AuthProvider({ children }) {
       return { error };
     }
 
-    // Optimistically update local user state from RPC response
     setUser(prev => prev ? {
       ...prev,
       xp:                data.xp,
@@ -189,7 +100,7 @@ export function AuthProvider({ children }) {
     } : prev);
 
     return { error: null };
-  }, [user]);
+  };
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, saveInvestigation }}>

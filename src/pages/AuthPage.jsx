@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from '../components/Toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,43 +8,27 @@ export default function AuthPage() {
   const [email, setEmail]               = useState('');
   const [password, setPassword]         = useState('');
   const [name, setName]                 = useState('');
-  const [loading, setLoading]           = useState(false);
-  const [confirmationSent, setConfirmationSent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const { user, signIn, signUp } = useAuth();
+  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
-
-  // If user becomes authenticated (direct login OR after clicking confirmation email link)
-  // redirect to lobby immediately
-  useEffect(() => {
-    if (user) navigate('/lobby', { replace: true });
-  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const result =
-      tab === 'login'
-        ? await signIn(email, password)
-        : await signUp(email, password, name);
-
-    console.log('[handleSubmit] result:', result);
-    console.log('[handleSubmit] result.error:', result.error);
-    console.log('[handleSubmit] result.needsConfirmation:', result.needsConfirmation);
+    const { error } = tab === 'login'
+      ? await signIn(email, password)
+      : await signUp(email, password, name);
 
     setLoading(false);
 
-    if (result.error) {
-      toast.error(result.error.message);
-    } else if (tab === 'register' && result.needsConfirmation) {
-      // Only shown if email confirmation is enabled in Supabase.
-      setConfirmationSent(true);
-    } else if (tab === 'register') {
-      // Email confirmation is off — session is live, navigate immediately.
-      navigate('/lobby');
+    if (error) {
+      toast.error(error.message);
+      return;
     }
-    // login success: the useEffect above redirects to /lobby once the session lands.
+
+    navigate('/lobby', { replace: true });
   };
 
   const switchTab = (t) => {
@@ -52,55 +36,7 @@ export default function AuthPage() {
     setEmail('');
     setPassword('');
     setName('');
-    setConfirmationSent(false);
   };
-
-  // ── Confirmation pending screen ──────────────────────────────────────────
-  if (confirmationSent) {
-    return (
-      <div className="min-h-screen bg-[#111927] flex flex-col">
-        <header className="h-16 border-b border-[#1C2536] flex items-center px-6">
-          <Link to="/" className="text-xl font-black tracking-tighter text-[#9FEF00] uppercase neon-glow">
-            SOC-Next
-          </Link>
-        </header>
-
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-md text-center">
-            <div className="bg-[#1C2536] border border-[#9FEF00]/30 rounded-lg p-10">
-              <div className="w-16 h-16 rounded-full bg-[#9FEF00]/10 border border-[#9FEF00]/30 flex items-center justify-center mx-auto mb-6">
-                <span className="material-symbols-outlined text-[#9FEF00] text-3xl" aria-hidden="true">mark_email_unread</span>
-              </div>
-              <h2 className="text-2xl font-black text-white mb-3">בדוק את המייל שלך</h2>
-              <p className="text-slate-400 text-sm leading-relaxed mb-2">
-                שלחנו קישור אישור לכתובת:
-              </p>
-              <p className="text-[#9FEF00] font-mono text-sm mb-6 break-all">{email}</p>
-              <p className="text-slate-500 text-xs leading-relaxed mb-8">
-                לחץ על הקישור במייל כדי לאשר את החשבון.
-                לאחר האישור תועבר אוטומטית למערכת.
-              </p>
-
-              <div className="bg-[#111927] border border-[#1C2536] rounded p-4 text-right mb-6">
-                <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest mb-1">לא קיבלת מייל?</p>
-                <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                  <li>בדוק תיקיית ספאם</li>
-                  <li>ייתכן שייקח עד דקה להגיע</li>
-                </ul>
-              </div>
-
-              <button
-                onClick={() => { setConfirmationSent(false); setTab('login'); }}
-                className="text-sm text-slate-400 hover:text-[#9FEF00] transition-colors underline"
-              >
-                חזרה להתחברות
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ── Login / Register form ────────────────────────────────────────────────
   return (

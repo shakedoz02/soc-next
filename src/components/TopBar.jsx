@@ -10,7 +10,7 @@ export default function TopBar() {
     navigate('/');
   };
 
-  const xpPercent = user ? Math.round((user.xp / user.xpToNext) * 100) : 0;
+  const xpPercent = user ? Math.round(((user?.xp ?? 0) / (user?.xpToNext || 1)) * 100) : 0;
 
   return (
     <header className="bg-[#111927] border-b border-[#1C2536] fixed top-0 w-full h-16 z-50 flex justify-between items-center px-6">
@@ -36,7 +36,7 @@ export default function TopBar() {
           <div className="hidden md:flex items-center gap-3">
             <div className="text-left">
               <div className="text-xs text-slate-500 uppercase tracking-widest font-mono">
-                Level {user.level} · {user.xp.toLocaleString()} XP
+                Level {user?.level ?? 1} · {(user?.xp ?? 0).toLocaleString()} XP
               </div>
               <div className="w-32 h-1 bg-[#1C2536] rounded-full mt-1">
                 <div
