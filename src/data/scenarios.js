@@ -26,7 +26,11 @@ export const SCENARIOS = [
       { step: 4, title: 'תיעוד האירוע', description: 'תעד את ממצאיך: כתובת IP, טווח זמן, שיטות תקיפה, ומידע שנחשף. סגור את הכרטיס.' },
     ],
     solution: {
-      commands: ['fw-block 192.168.1.105'],
+      commands: [
+        { cmd: 'whois 192.168.1.105',    stepIndex: 0 },
+        { cmd: 'scan 192.168.1.105',     stepIndex: 1 },
+        { cmd: 'fw-block 192.168.1.105', stepIndex: 2 },
+      ],
       keywords: ['192.168.1.105'],
     },
   },
@@ -56,7 +60,12 @@ export const SCENARIOS = [
       { step: 4, title: 'חיזוק ההגנה', description: 'המלץ על הפעלת Rate Limiting וMFA על שרת האימות. תעד את האירוע.' },
     ],
     solution: {
-      commands: ['fw-block 10.0.0.47', 'kill-session 10.0.0.47'],
+      commands: [
+        { cmd: 'whois 10.0.0.47',        stepIndex: 0 },
+        { cmd: 'scan 10.0.0.47',         stepIndex: 1 },
+        { cmd: 'fw-block 10.0.0.47',     stepIndex: 2 },
+        { cmd: 'kill-session 10.0.0.47', stepIndex: 2 },
+      ],
       keywords: ['10.0.0.47'],
     },
   },
@@ -85,7 +94,11 @@ export const SCENARIOS = [
       { step: 4, title: 'דיווח ותיעוד', description: 'תעד את וקטור התקיפה, הנזק, והפעולות שננקטו. העלה כרטיס לצוות IR.' },
     ],
     solution: {
-      commands: ['isolate-host 172.16.0.88', 'fw-block 172.16.0.88'],
+      commands: [
+        { cmd: 'isolate-host 172.16.0.88', stepIndex: 0 },
+        { cmd: 'scan 172.16.0.88',         stepIndex: 1 },
+        { cmd: 'fw-block 172.16.0.88',     stepIndex: 2 },
+      ],
       keywords: ['172.16.0.88'],
     },
   },
@@ -112,7 +125,11 @@ export const SCENARIOS = [
       { step: 4, title: 'חקירה', description: 'בדוק את ההתקן המקורי לוירוסים וגישה לא מורשית.' },
     ],
     solution: {
-      commands: ['fw-block 192.168.10.55'],
+      commands: [
+        { cmd: 'whois 192.168.10.55',    stepIndex: 0 },
+        { cmd: 'scan 192.168.10.55',     stepIndex: 1 },
+        { cmd: 'fw-block 192.168.10.55', stepIndex: 2 },
+      ],
       keywords: ['192.168.10.55'],
     },
   },

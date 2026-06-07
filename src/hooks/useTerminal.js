@@ -13,8 +13,6 @@ const HELP_LINES = [
 
 const BLOCK_COMMANDS = ['fw-block', 'isolate-host', 'kill-session'];
 
-// Exposed when close-ticket succeeds so the page can react without a callback
-// { score, mistakes, commands }
 const INITIAL_FINAL = null;
 
 export function useTerminal(scenario) {
@@ -26,12 +24,30 @@ export function useTerminal(scenario) {
   const [input, setInput]               = useState('');
   const [score, setScore]               = useState(100);
   const [mistakes, setMistakes]         = useState(0);
+  // Stores 0-based playbook step indices that have been completed
   const [completedSteps, setCompletedSteps] = useState([]);
+  // Stores the actual command strings executed (for finalState / PDF export)
+  const [executedCmds, setExecutedCmds] = useState([]);
   const [finished, setFinished]         = useState(false);
   const [finalState, setFinalState]     = useState(INITIAL_FINAL);
 
   const push = (lines) =>
     setHistory(h => [...h.slice(0, -1), ...lines, { type: 'prompt', text: '' }]);
+
+  // Checks solution.commands for a matching entry and, if found, appends a step
+  // completion message to lines and updates completedSteps / executedCmds state.
+  const tryCompleteStep = (command, arg, lines) => {
+    const entry = scenario.solution.commands.find(e =>
+      e.cmd.toLowerCase().startsWith(command) && e.cmd.toLowerCase().includes(arg)
+    );
+    if (!entry) return;
+    lines.push({
+      type: 'success',
+      text: `  ► שלב ${entry.stepIndex + 1} הושלם: ${scenario.playbook[entry.stepIndex]?.title}`,
+    });
+    setCompletedSteps(prev => prev.includes(entry.stepIndex) ? prev : [...prev, entry.stepIndex]);
+    setExecutedCmds(prev => prev.includes(entry.cmd) ? prev : [...prev, entry.cmd]);
+  };
 
   const handleCommand = useCallback((cmd) => {
     const trimmed = cmd.trim();
@@ -56,6 +72,7 @@ export function useTerminal(scenario) {
         lines.push({ type: 'output', text: '  Organization: Unknown / Suspicious' });
         lines.push({ type: 'output', text: '  Country: [REDACTED]' });
         lines.push({ type: 'output', text: '  Threat Score: HIGH' });
+        tryCompleteStep(command, arg, lines);
       }
 
     } else if (command === 'scan') {
@@ -67,6 +84,7 @@ export function useTerminal(scenario) {
         lines.push({ type: 'output', text: '  22/tcp  open   ssh' });
         lines.push({ type: 'output', text: '  80/tcp  open   http' });
         lines.push({ type: 'output', text: '  443/tcp open   https' });
+        tryCompleteStep(command, arg, lines);
       }
 
     } else if (BLOCK_COMMANDS.includes(command)) {
@@ -80,18 +98,7 @@ export function useTerminal(scenario) {
           lines.push({ type: 'success', text: `✔ ${command.toUpperCase()} ${arg} — בוצע בהצלחה` });
           lines.push({ type: 'success', text: `  ► כתובת IP ${arg} נחסמה בחומת האש` });
 
-          const matchedCmd = scenario.solution.commands.find(c =>
-            c.toLowerCase().includes(command) && c.toLowerCase().includes(arg)
-          );
-          if (matchedCmd) {
-            setCompletedSteps(prev => {
-              if (prev.includes(matchedCmd)) return prev;
-              const next = [...prev, matchedCmd];
-              const stepIdx = Math.min(next.length - 1, scenario.playbook.length - 1);
-              lines.push({ type: 'success', text: `  ► שלב ${stepIdx + 1} הושלם: ${scenario.playbook[stepIdx]?.title}` });
-              return next;
-            });
-          }
+          tryCompleteStep(command, arg, lines);
         } else {
           lines.push({ type: 'error', text: `✘ ${command.toUpperCase()} ${arg} — כתובת IP שגויה` });
           lines.push({ type: 'error', text: '  ► בדוק את הלוגים שוב ומצא את כתובת התוקף' });
@@ -101,28 +108,29 @@ export function useTerminal(scenario) {
       }
 
     } else if (command === 'close-ticket') {
-      // Read current state via functional updaters to avoid stale closures
       setCompletedSteps(currentSteps => {
         setScore(currentScore => {
           setMistakes(currentMistakes => {
-            const allDone = scenario.solution.commands.every(c =>
-              currentSteps.some(cs => cs.includes(c.split(' ')[0]))
-            );
+            setExecutedCmds(currentCmds => {
+              const allDone = scenario.solution.commands.every(entry =>
+                currentSteps.includes(entry.stepIndex)
+              );
 
-            if (allDone || currentSteps.length > 0) {
-              const finalScore = Math.max(0, currentScore - currentMistakes * 5);
-              lines.push({ type: 'success', text: '✔ הכרטיס נסגר. מעביר לדו"ח...' });
-              lines.push({ type: 'success', text: `  ► ניקוד סופי: ${finalScore}` });
+              if (allDone || currentSteps.length > 0) {
+                const finalScore = Math.max(0, currentScore - currentMistakes * 5);
+                lines.push({ type: 'success', text: '✔ הכרטיס נסגר. מעביר לדו"ח...' });
+                lines.push({ type: 'success', text: `  ► ניקוד סופי: ${finalScore}` });
 
-              // Publish final state — the page will react via useEffect
-              setFinalState({ score: finalScore, mistakes: currentMistakes, commands: currentSteps });
-              setFinished(true);
-            } else {
-              lines.push({ type: 'error', text: '✘ לא ניתן לסגור — טרם בוצעו פעולות בלימה.' });
-              lines.push({ type: 'error', text: '  ► בצע את הפעולות הנדרשות ואז נסה שוב.' });
-              setScore(s => Math.max(0, s - 10));
-            }
-            push(lines);
+                setFinalState({ score: finalScore, mistakes: currentMistakes, commands: currentCmds });
+                setFinished(true);
+              } else {
+                lines.push({ type: 'error', text: '✘ לא ניתן לסגור — טרם בוצעו פעולות בלימה.' });
+                lines.push({ type: 'error', text: '  ► בצע את הפעולות הנדרשות ואז נסה שוב.' });
+                setScore(s => Math.max(0, s - 10));
+              }
+              push(lines);
+              return currentCmds;
+            });
             return currentMistakes;
           });
           return currentScore;
@@ -147,10 +155,10 @@ export function useTerminal(scenario) {
     input,
     setInput,
     handleCommand,
-    completedSteps,
+    completedSteps,  // number[] of completed playbook step indices
     score: currentScore,
     mistakes,
     finished,
-    finalState, // { score, mistakes, commands } once finished, else null
+    finalState,      // { score, mistakes, commands } once finished, else null
   };
 }

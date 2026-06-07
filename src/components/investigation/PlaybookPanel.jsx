@@ -29,7 +29,9 @@ function PlaybookStep({ step, isDone, isCurrent }) {
 const MemoPlaybookStep = memo(PlaybookStep);
 
 export default function PlaybookPanel({ scenario, completedSteps, onCloseTicket, finished }) {
-  const tipIdx = Math.min(completedSteps.length, scenario.playbook.length - 1);
+  // completedSteps is an array of 0-based step indices that have been completed
+  const firstUndoneIdx = scenario.playbook.findIndex((_, i) => !completedSteps.includes(i));
+  const tipIdx = firstUndoneIdx >= 0 ? firstUndoneIdx : scenario.playbook.length - 1;
   const currentTip = scenario.playbook[tipIdx];
 
   return (
@@ -53,8 +55,8 @@ export default function PlaybookPanel({ scenario, completedSteps, onCloseTicket,
             <MemoPlaybookStep
               key={step.step}
               step={step}
-              isDone={completedSteps.length > idx}
-              isCurrent={completedSteps.length === idx}
+              isDone={completedSteps.includes(idx)}
+              isCurrent={!completedSteps.includes(idx) && idx === firstUndoneIdx}
             />
           ))}
         </ol>
