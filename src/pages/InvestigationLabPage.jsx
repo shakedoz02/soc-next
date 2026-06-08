@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { toast } from '../components/Toast';
 import { SCENARIOS } from '../data/scenarios';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTerminal } from '../hooks/useTerminal';
 import { useInvestigationTimer } from '../hooks/useInvestigationTimer';
@@ -17,23 +18,61 @@ export default function InvestigationLabPage() {
   const [activeLog, setActiveLog]  = useState(null);
   const savedRef                   = useRef(false); // prevent double-save on StrictMode
 
-  const scenario = SCENARIOS.find(s => s.id === scenarioId);
+  const staticScenario = SCENARIOS.find(s => s.id === scenarioId);
 
-  const { variant, logs: variantLogs, loading: variantLoading, error: variantError } =
+  // Fetch from Supabase when the scenario isn't in the static list
+  const [dbScenario, setDbScenario]   = useState(null);
+  const [dbLoading, setDbLoading]     = useState(!staticScenario);
+  const [dbError, setDbError]         = useState(null);
+
+  useEffect(() => {
+    if (staticScenario || !scenarioId) return;
+
+    let cancelled = false;
+    setDbLoading(true);
+    setDbError(null);
+
+    supabase
+      .from('scenarios')
+      .select('*')
+      .eq('id', scenarioId)
+      .single()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || !data) {
+          setDbError(error?.message ?? 'Scenario not found');
+        } else {
+          setDbScenario({
+            ...data,
+            titleHe:  data.title_he  ?? data.titleHe  ?? data.title,
+            xpReward: data.xp_reward ?? data.xpReward ?? 0,
+          });
+        }
+        setDbLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [scenarioId, staticScenario]);
+
+  const scenario = staticScenario ?? dbScenario;
+
+  const { variant, logs: variantLogs, playbook: variantPlaybook, loading: variantLoading, error: variantError } =
     useScenarioVariant(scenarioId, user?.level ?? 1);
 
   const runtimeScenario = useMemo(() => {
     if (!scenario || !variant) return null;
+    const { playbook: _ignored, ...scenarioBase } = scenario;
     return {
-      ...scenario,
-      logs: variantLogs,
+      ...scenarioBase,
+      logs:       variantLogs,
+      playbook:   variantPlaybook,
       attackerIP: variant.attacker_ip,
       solution: {
         commands: variant.solution_commands,
         keywords: variant.solution_keywords,
       },
     };
-  }, [scenario, variant, variantLogs]);
+  }, [scenario, variant, variantLogs, variantPlaybook]);
 
   const terminal     = useTerminal(runtimeScenario);
   const timer        = useInvestigationTimer(!terminal.finished);
@@ -74,7 +113,16 @@ export default function InvestigationLabPage() {
     }, 1800);
   }, [terminal.finished]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!scenario) return <Navigate to="/alerts" replace />;
+  if (!scenario && dbLoading) {
+    return (
+      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-4 font-assistant bg-[#0D1117]">
+        <span className="material-symbols-outlined text-[#9FEF00] text-4xl animate-spin">progress_activity</span>
+        <p className="text-slate-400 text-sm font-technical-mono tracking-widest uppercase">טוען תרחיש...</p>
+      </div>
+    );
+  }
+
+  if (!scenario && (dbError || !dbLoading)) return <Navigate to="/alerts" replace />;
 
   if (variantError) {
     return (
@@ -172,7 +220,7 @@ export default function InvestigationLabPage() {
         </div>
 
         <PlaybookPanel
-          scenario={scenario}
+          scenario={runtimeScenario}
           completedSteps={terminal.completedSteps}
           onCloseTicket={() => terminal.handleCommand('close-ticket')}
           finished={terminal.finished}

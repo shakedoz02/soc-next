@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 export function useScenarioVariant(scenarioId, userLevel) {
-  const [variant, setVariant] = useState(null);
-  const [logs, setLogs]       = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [variant, setVariant]   = useState(null);
+  const [logs, setLogs]         = useState([]);
+  const [playbook, setPlaybook] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
 
   useEffect(() => {
     if (!scenarioId) return;
@@ -34,18 +35,32 @@ export function useScenarioVariant(scenarioId, userLevel) {
 
       const picked = variants[Math.floor(Math.random() * variants.length)];
 
-      const { data: logRows, error: logsErr } = await supabase
-        .from('logs')
-        .select('*')
-        .eq('scenario_id', scenarioId)
-        .eq('variant_number', picked.variant_number)
-        .order('timestamp', { ascending: true });
+      const [logsRes, playbookRes] = await Promise.all([
+        supabase
+          .from('logs')
+          .select('*')
+          .eq('scenario_id', scenarioId)
+          .eq('variant_number', picked.variant_number)
+          .order('timestamp', { ascending: true }),
+        supabase
+          .from('playbook_steps')
+          .select('*')
+          .eq('scenario_id', scenarioId)
+          .order('step_number', { ascending: true }),
+      ]);
 
       if (cancelled) return;
-      if (logsErr) { setError(logsErr.message); setLoading(false); return; }
+      if (logsRes.error) { setError(logsRes.error.message); setLoading(false); return; }
 
       setVariant(picked);
-      setLogs(logRows ?? []);
+      setLogs(logsRes.data ?? []);
+      setPlaybook(
+        (playbookRes.data ?? []).map(r => ({
+          step:        r.step_number,
+          title:       r.title,
+          description: r.description,
+        }))
+      );
       setLoading(false);
     }
 
@@ -53,5 +68,5 @@ export function useScenarioVariant(scenarioId, userLevel) {
     return () => { cancelled = true; };
   }, [scenarioId, userLevel]);
 
-  return { variant, logs, loading, error };
+  return { variant, logs, playbook, loading, error };
 }
