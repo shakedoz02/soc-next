@@ -2,13 +2,17 @@ import { useState, useCallback } from 'react';
 
 const HELP_LINES = [
   'פקודות זמינות:',
-  '  fw-block <IP>       — חסימת כתובת IP בחומת האש',
-  '  isolate-host <IP>   — בידוד מארח מהרשת',
-  '  kill-session <IP>   — ביטול סשן פעיל',
-  '  whois <IP>          — מידע על כתובת IP',
-  '  scan <IP>           — סריקת פורטים פתוחים',
-  '  close-ticket        — סגירת הכרטיס וסיום החקירה',
-  '  help                — הצגת עזרה',
+  '  fw-block <IP>           — חסימת כתובת IP בחומת האש',
+  '  isolate-host <IP>       — בידוד מארח מהרשת',
+  '  kill-session <IP>       — ביטול סשן פעיל',
+  '  whois <IP>              — מידע על כתובת IP',
+  '  scan <IP>               — סריקת פורטים פתוחים',
+  '  reset-password <user>   — איפוס סיסמה למשתמש',
+  '  disable-account <user>  — השבתת חשבון משתמש',
+  '  block-url <URL>         — חסימת כתובת URL',
+  '  quarantine <file>       — בידוד קובץ חשוד',
+  '  close-ticket            — סגירת הכרטיס וסיום החקירה',
+  '  help                    — הצגת עזרה',
 ];
 
 const BLOCK_COMMANDS = ['fw-block', 'isolate-host', 'kill-session'];
@@ -142,6 +146,46 @@ export function useTerminal(scenario) {
         return currentSteps;
       });
       return; // push already called inside
+
+    } else if (command === 'reset-password') {
+      if (!arg) {
+        lines.push({ type: 'error', text: 'שגיאה: נדרש שם משתמש. דוגמה: reset-password <user>' });
+        setScore(s => Math.max(0, s - 5));
+        setMistakes(m => m + 1);
+      } else {
+        lines.push({ type: 'output', text: `Password reset successful for user: ${arg}. Temporary password sent to security team.` });
+        tryCompleteStep(command, arg, lines);
+      }
+
+    } else if (command === 'disable-account') {
+      if (!arg) {
+        lines.push({ type: 'error', text: 'שגיאה: נדרש שם משתמש. דוגמה: disable-account <user>' });
+        setScore(s => Math.max(0, s - 5));
+        setMistakes(m => m + 1);
+      } else {
+        lines.push({ type: 'output', text: `Account ${arg} has been disabled. All active sessions terminated.` });
+        tryCompleteStep(command, arg, lines);
+      }
+
+    } else if (command === 'block-url') {
+      if (!arg) {
+        lines.push({ type: 'error', text: 'שגיאה: נדרש URL. דוגמה: block-url <URL>' });
+        setScore(s => Math.max(0, s - 5));
+        setMistakes(m => m + 1);
+      } else {
+        lines.push({ type: 'output', text: `URL blocked successfully: ${arg}. Added to threat intelligence feed.` });
+        tryCompleteStep(command, arg, lines);
+      }
+
+    } else if (command === 'quarantine') {
+      if (!arg) {
+        lines.push({ type: 'error', text: 'שגיאה: נדרש שם קובץ. דוגמה: quarantine <file>' });
+        setScore(s => Math.max(0, s - 5));
+        setMistakes(m => m + 1);
+      } else {
+        lines.push({ type: 'output', text: `File quarantined successfully: ${arg}. Moved to sandbox for analysis.` });
+        tryCompleteStep(command, arg, lines);
+      }
 
     } else {
       lines.push({ type: 'error', text: `פקודה לא מוכרת: "${command}". הקלד "help" לרשימת פקודות.` });
