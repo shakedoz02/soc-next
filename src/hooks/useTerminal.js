@@ -34,7 +34,6 @@ export function useTerminal(scenario) {
   const [executedCmds, setExecutedCmds] = useState([]);
   const [finished, setFinished]         = useState(false);
   const [finalState, setFinalState]     = useState(INITIAL_FINAL);
-  const [firstCommandExecuted, setFirstCommandExecuted] = useState(false);
 
   const push = (lines) =>
     setHistory(h => [...h.slice(0, -1), ...lines, { type: 'prompt', text: '' }]);
@@ -65,9 +64,6 @@ export function useTerminal(scenario) {
     const command = parts[0];
     const arg     = parts[1] || '';
     const lines   = [{ type: 'input', text: `$ ${cmd}` }];
-    
-    // Mark that first command has been executed
-    setFirstCommandExecuted(true);
 
     if (command === 'help') {
       HELP_LINES.forEach(t => lines.push({ type: 'output', text: t }));
@@ -208,6 +204,5 @@ export function useTerminal(scenario) {
     mistakes,
     finished,
     finalState,      // { score, mistakes, commands } once finished, else null
-    firstCommandExecuted,
   };
 }

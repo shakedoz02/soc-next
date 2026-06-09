@@ -175,12 +175,6 @@ export default function InvestigationLabPage() {
               </span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest">ניקוד</span>
-              <span className={`font-technical-mono text-lg font-bold ${scoreColor}`}>
-                {terminal.firstCommandExecuted ? terminal.score : '--'}
-              </span>
-            </div>
-            <div className="flex flex-col items-center">
               <span className="text-[10px] text-slate-400 uppercase tracking-widest">שגיאות</span>
               <span className="font-technical-mono text-red-400 text-lg">{terminal.mistakes}</span>
             </div>

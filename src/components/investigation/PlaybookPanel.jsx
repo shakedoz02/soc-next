@@ -1,4 +1,11 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
+
+function renderDescription(text) {
+  if (!text) return null;
+  return text.split(/(<\w+>)/g).map((part, i) =>
+    /^<\w+>$/.test(part) ? <span key={i} dir="ltr">{part}</span> : part
+  );
+}
 
 function PlaybookStep({ step, isDone, isCurrent }) {
   return (
@@ -28,11 +35,26 @@ function PlaybookStep({ step, isDone, isCurrent }) {
 
 const MemoPlaybookStep = memo(PlaybookStep);
 
+function parseDescription(description) {
+  if (!description) return { hint: null, command: null };
+  const sepIdx = description.indexOf(' — ');
+  if (sepIdx === -1) return { hint: description, command: null };
+  return {
+    command: description.slice(0, sepIdx).trim(),
+    hint: description.slice(sepIdx + 3).trim(),
+  };
+}
+
 export default function PlaybookPanel({ scenario, completedSteps, onCloseTicket, finished }) {
+  const [showCommand, setShowCommand] = useState(false);
+
   // completedSteps is an array of 0-based step indices that have been completed
   const firstUndoneIdx = scenario.playbook.findIndex((_, i) => !completedSteps.includes(i));
   const tipIdx = firstUndoneIdx >= 0 ? firstUndoneIdx : scenario.playbook.length - 1;
   const currentTip = scenario.playbook[tipIdx];
+  const { hint, command } = parseDescription(currentTip?.description);
+
+  useEffect(() => { setShowCommand(false); }, [tipIdx]);
 
   return (
     <aside
@@ -68,8 +90,31 @@ export default function PlaybookPanel({ scenario, completedSteps, onCloseTicket,
               שלב {tipIdx + 1}: {currentTip?.title}
             </span>
             <p className="text-xs text-slate-300 leading-relaxed">
-              {currentTip?.description}
+              {renderDescription(hint)}
             </p>
+            {command && (
+              <div className="mt-2">
+                <button
+                  onClick={() => setShowCommand(v => !v)}
+                  className="text-[10px] text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  {showCommand ? 'הסתר רמז' : '💡 רמז'}
+                </button>
+                {showCommand && (() => {
+                  const colonIdx = command.indexOf(': ');
+                  const label = colonIdx !== -1 ? command.slice(0, colonIdx + 1) : null;
+                  const cmdText = colonIdx !== -1 ? command.slice(colonIdx + 2) : command;
+                  return (
+                    <div className="mt-1">
+                      {label && <span className="text-xs text-yellow-300">{label}</span>}
+                      <p className="text-xs text-yellow-300 leading-relaxed" dir="ltr">
+                        {renderDescription(cmdText)}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         </div>
       </div>
