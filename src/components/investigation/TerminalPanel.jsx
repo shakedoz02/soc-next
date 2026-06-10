@@ -8,7 +8,15 @@ const LINE_COLORS = {
   error: 'text-red-400',
 };
 
-const QUICK_CMDS = ['help', 'whois <IP>', 'fw-block <IP>', 'close-ticket'];
+const QUICK_CMDS = [
+  'help',
+  'scan <IP>',
+  'whois <IP>',
+  'port-info',
+  'fw-block <IP>',
+  'isolate-host <IP>',
+  'close-ticket',
+];
 
 function TerminalLine({ line, index }) {
   if (line.type !== 'prompt') {
@@ -34,10 +42,11 @@ export default function TerminalPanel({ history, input, onInputChange, onKeyDown
   }, [history]);
 
   const handleQuickCmd = (cmd) => {
-    if (!cmd.includes('<IP>')) {
+    const hasPlaceholder = /<(IP|user|URL|file)>/.test(cmd);
+    if (!hasPlaceholder) {
       onCommand(cmd);
     } else {
-      onInputChange(cmd.replace(' <IP>', ' '));
+      onInputChange(cmd.replace(/ <(IP|user|URL|file)>/, ' '));
       inputRef.current?.focus();
     }
   };
