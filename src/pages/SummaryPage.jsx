@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { motion, animate } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { SCENARIOS } from '../data/scenarios';
 import jsPDF from 'jspdf';
@@ -12,23 +14,34 @@ function CircularScore({ score }) {
   const color = score >= 80 ? '#9FEF00' : score >= 50 ? '#F59E0B' : '#FF4D4D';
   const label = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Fair' : 'Needs Work';
 
+  const [displayScore, setDisplayScore] = useState(0);
+  useEffect(() => {
+    const controls = animate(0, score, {
+      duration: 1.5,
+      ease: 'easeOut',
+      onUpdate: v => setDisplayScore(Math.round(v)),
+    });
+    return controls.stop;
+  }, [score]);
+
   return (
     <div className="relative w-64 h-64" role="img" aria-label={`ציון סופי: ${score} — ${label}`}>
       <svg className="w-full h-full" viewBox="0 0 256 256" aria-hidden="true">
         <circle cx="128" cy="128" r={radius} fill="transparent" stroke="#111927" strokeWidth="12" />
-        <circle
+        <motion.circle
           cx="128" cy="128" r={radius}
           fill="transparent"
           stroke={color}
           strokeWidth="12"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
           strokeLinecap="round"
-          className="progress-ring__circle"
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1.2, ease: 'easeOut' }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-7xl font-black" style={{ color }}>{score}</span>
+        <span className="text-7xl font-black" style={{ color }}>{displayScore}</span>
         <span className="text-slate-500 font-technical-mono text-sm tracking-widest uppercase">{label}</span>
       </div>
     </div>
@@ -88,6 +101,16 @@ export default function SummaryPage() {
 
   const { score, xpEarned, elapsed, mistakes, commands } = state;
   const accuracy = Math.max(0, 100 - mistakes * 10);
+
+  const [displayXP, setDisplayXP] = useState(0);
+  useEffect(() => {
+    const controls = animate(0, xpEarned, {
+      duration: 1.2,
+      ease: 'easeOut',
+      onUpdate: v => setDisplayXP(Math.round(v)),
+    });
+    return controls.stop;
+  }, [xpEarned]);
 
   const formatTime = (s) => {
     const m = Math.floor(s / 60);
@@ -210,7 +233,7 @@ export default function SummaryPage() {
             <div className="w-px h-8 bg-slate-700" aria-hidden="true" />
             <div className="text-center">
               <div className="text-slate-500 text-[10px] font-technical-mono uppercase mb-1">XP Earned</div>
-              <div className="text-[#9FEF00] font-technical-mono">+{xpEarned}</div>
+              <div className="text-[#9FEF00] font-technical-mono">+{displayXP}</div>
             </div>
           </div>
         </div>
@@ -219,19 +242,25 @@ export default function SummaryPage() {
         <div className="col-span-12 lg:col-span-7 space-y-6">
           <div className="grid grid-cols-3 gap-4">
             {[
-              { icon: 'stars', label: 'XP Gained', value: `+${xpEarned.toLocaleString()}`, color: 'text-white' },
+              { icon: 'stars', label: 'XP Gained', value: `+${displayXP.toLocaleString()}`, color: 'text-white' },
               { icon: 'schedule', label: 'Shift Time', value: formatTime(elapsed), color: 'text-white' },
               { icon: 'verified', label: 'Accuracy', value: `${accuracy}%`, color: 'text-[#9FEF00]' },
-            ].map(({ icon, label, value, color }) => (
-              <StatCard
+            ].map(({ icon, label, value, color }, index) => (
+              <motion.div
                 key={label}
-                icon={icon}
-                label={label}
-                value={value}
-                color={color}
-                className="border border-[#1C2536] p-6 hover:border-[#9FEF00]/40 transition-all duration-300"
-                labelClassName="font-technical-mono"
-              />
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', damping: 20, delay: index * 0.15 }}
+              >
+                <StatCard
+                  icon={icon}
+                  label={label}
+                  value={value}
+                  color={color}
+                  className="border border-[#1C2536] p-6 hover:border-[#9FEF00]/40 transition-all duration-300"
+                  labelClassName="font-technical-mono"
+                />
+              </motion.div>
             ))}
           </div>
           <ActivityChart />

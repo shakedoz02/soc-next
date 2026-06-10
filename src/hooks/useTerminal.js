@@ -189,11 +189,53 @@ export function useTerminal(scenario) {
       if (!arg) {
         lines.push({ type: 'error', text: 'שגיאה: נדרש כתובת IP.' });
       } else {
-        const ports = SCAN_PORTS[scenario?.id] ?? SCAN_PORTS.default;
-        lines.push({ type: 'output', text: `Scanning ${arg}...` });
-        lines.push({ type: 'output', text: '  PORT      STATE  SERVICE' });
-        ports.forEach(p => lines.push({ type: 'output', text: p }));
-        lines.push({ type: 'output', text: '💡 הקלד port-info לקבלת הסבר על הפורטים שנמצאו' });
+        const scenarioId = scenario?.id;
+        const NETWORK_SCENARIOS = ['ddos', 'port-scan', 'sql-injection', 'data-exfiltration'];
+
+        if (NETWORK_SCENARIOS.includes(scenarioId)) {
+          const ports = SCAN_PORTS[scenarioId] ?? SCAN_PORTS.default;
+          lines.push({ type: 'output', text: `Scanning ${arg}...` });
+          lines.push({ type: 'output', text: '  PORT      STATE  SERVICE' });
+          ports.forEach(p => lines.push({ type: 'output', text: p }));
+          lines.push({ type: 'output', text: '💡 הקלד port-info לקבלת הסבר על הפורטים שנמצאו' });
+        } else if (scenarioId === 'phishing') {
+          lines.push({ type: 'output', text: 'Scanning affected users...' });
+          lines.push({ type: 'output', text: 'AFFECTED ACCOUNTS:' });
+          lines.push({ type: 'output', text: '  user: david.cohen@company.com — clicked phishing link' });
+          lines.push({ type: 'output', text: '  user: sarah.levi@company.com — credentials submitted' });
+          lines.push({ type: 'output', text: '  user: admin@company.com — session hijacked' });
+          lines.push({ type: 'output', text: 'Total affected: 3 users' });
+          lines.push({ type: 'output', text: '💡 הקלד port-info לקבלת מידע נוסף' });
+        } else if (scenarioId === 'brute-force') {
+          lines.push({ type: 'output', text: 'Scanning target system...' });
+          lines.push({ type: 'output', text: 'AUTHENTICATION LOGS:' });
+          lines.push({ type: 'output', text: '  service: SSH (port 22) — 312 failed attempts' });
+          lines.push({ type: 'output', text: '  service: RDP (port 3389) — 89 failed attempts' });
+          lines.push({ type: 'output', text: '  compromised account: operator' });
+          lines.push({ type: 'output', text: '  last successful login: from attacker IP' });
+        } else if (scenarioId === 'privilege-escalation') {
+          lines.push({ type: 'output', text: 'Scanning compromised system...' });
+          lines.push({ type: 'output', text: 'PRIVILEGE AUDIT:' });
+          lines.push({ type: 'output', text: '  user: john.doe — escalated to ROOT' });
+          lines.push({ type: 'output', text: '  modified files: /etc/shadow, /etc/passwd' });
+          lines.push({ type: 'output', text: '  new hidden account: .sysadmin' });
+          lines.push({ type: 'output', text: '  cron persistence: detected' });
+        } else if (scenarioId === 'ransomware') {
+          lines.push({ type: 'output', text: 'Scanning network for infections...' });
+          lines.push({ type: 'output', text: 'INFECTED ENDPOINTS:' });
+          lines.push({ type: 'output', text: '  Endpoint-07 — encrypted: 1,200 files' });
+          lines.push({ type: 'output', text: '  Endpoint-12 — encryption in progress' });
+          lines.push({ type: 'output', text: '  Endpoint-15 — beacon active' });
+          lines.push({ type: 'output', text: '  C2 server: <attacker IP>' });
+          lines.push({ type: 'output', text: '  Ransomware family: LockBit 3.0' });
+        } else {
+          const ports = SCAN_PORTS.default;
+          lines.push({ type: 'output', text: `Scanning ${arg}...` });
+          lines.push({ type: 'output', text: '  PORT      STATE  SERVICE' });
+          ports.forEach(p => lines.push({ type: 'output', text: p }));
+          lines.push({ type: 'output', text: '💡 הקלד port-info לקבלת הסבר על הפורטים שנמצאו' });
+        }
+
         setScanRun(true);
         tryCompleteStep(command, arg, lines);
       }

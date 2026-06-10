@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, animate } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { SCENARIOS } from '../data/scenarios';
@@ -67,6 +68,17 @@ export default function LobbyPage() {
   const user = profile || authUser;
   const xpPercent = Math.round(((user?.xp || 0) / (user?.xpToNext || 1)) * 100);
 
+  const [displayPercent, setDisplayPercent] = useState(0);
+  useEffect(() => {
+    if (loading) return;
+    const controls = animate(0, xpPercent, {
+      duration: 1,
+      ease: 'easeOut',
+      onUpdate: v => setDisplayPercent(Math.round(v)),
+    });
+    return controls.stop;
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
@@ -100,8 +112,15 @@ export default function LobbyPage() {
           { label: 'רמה', value: `Level ${user?.level}`, icon: 'emoji_events', color: 'text-yellow-400' },
           { label: 'דיוק ממוצע', value: `${user?.accuracy}%`, icon: 'verified', color: 'text-[#9FEF00]' },
           { label: 'משמרות הושלמו', value: user?.sessionsCompleted, icon: 'check_circle', color: 'text-[#9FEF00]' },
-        ].map(({ label, value, icon, color }) => (
-          <StatCard key={label} icon={icon} label={label} value={value} color={color} className="border border-[#222f45] p-5" />
+        ].map(({ label, value, icon, color }, index) => (
+          <motion.div
+            key={label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 20, delay: index * 0.1 }}
+          >
+            <StatCard icon={icon} label={label} value={value} color={color} className="border border-[#222f45] p-5" />
+          </motion.div>
         ))}
       </div>
 
@@ -109,7 +128,7 @@ export default function LobbyPage() {
       <div className="bg-[#1C2536] border border-[#222f45] rounded-lg p-5 mb-10">
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm font-semibold text-white">התקדמות לרמה {(user?.level || 0) + 1}</span>
-          <span className="font-mono text-xs text-[#9FEF00]">{xpPercent}%</span>
+          <span className="font-mono text-xs text-[#9FEF00]">{displayPercent}%</span>
         </div>
         <XpProgressBar xp={user?.xp} xpToNext={user?.xpToNext} percent={xpPercent} />
       </div>

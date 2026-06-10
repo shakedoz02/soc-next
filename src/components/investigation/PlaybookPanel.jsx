@@ -40,8 +40,8 @@ function parseDescription(description) {
   const sepIdx = description.indexOf(' — ');
   if (sepIdx === -1) return { hint: description, command: null };
   return {
-    command: description.slice(0, sepIdx).trim(),
-    hint: description.slice(sepIdx + 3).trim(),
+    hint: description.slice(0, sepIdx).trim(),
+    command: description.slice(sepIdx + 3).trim(),
   };
 }
 
@@ -85,10 +85,10 @@ export default function PlaybookPanel({ scenario, completedSteps, onCloseTicket,
 
         {/* Current tip box */}
         <div className="pt-4 border-t border-[#1C2536]">
+          <span className="text-[10px] text-[#9FEF00] font-technical-mono uppercase block mb-2">
+            שלב {tipIdx + 1}: {currentTip?.title}
+          </span>
           <div className="bg-[#1C2536]/50 p-3 rounded border border-[#1C2536]" role="status" aria-live="polite">
-            <span className="text-[10px] text-[#9FEF00] font-technical-mono uppercase block mb-1">
-              שלב {tipIdx + 1}: {currentTip?.title}
-            </span>
             <p className="text-xs text-slate-300 leading-relaxed">
               {renderDescription(hint)}
             </p>

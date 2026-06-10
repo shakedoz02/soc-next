@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function TopBar() {
@@ -39,9 +40,10 @@ export default function TopBar() {
                 Level {user?.level ?? 1} · {(user?.xp ?? 0).toLocaleString()} XP
               </div>
               <div className="w-32 h-1 bg-[#1C2536] rounded-full mt-1">
-                <div
-                  className="h-full bg-[#9FEF00] rounded-full transition-all duration-500"
-                  style={{ width: `${xpPercent}%` }}
+                <motion.div
+                  className="h-full bg-[#9FEF00] rounded-full"
+                  animate={{ width: `${xpPercent}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
                 />
               </div>
             </div>

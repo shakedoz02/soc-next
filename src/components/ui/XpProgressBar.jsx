@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+
 export default function XpProgressBar({ xp, xpToNext, percent: propPercent, labelClassName = 'mt-2 text-xs text-slate-500 font-mono' }) {
   const percent = propPercent ?? Math.round(((xp || 0) / (xpToNext || 1)) * 100);
   return (
@@ -9,9 +11,11 @@ export default function XpProgressBar({ xp, xpToNext, percent: propPercent, labe
         aria-valuemin={0}
         aria-valuemax={100}
       >
-        <div
-          className="h-full bg-[#9FEF00] rounded-full transition-all duration-700"
-          style={{ width: `${percent}%` }}
+        <motion.div
+          className="h-full bg-[#9FEF00] rounded-full"
+          initial={{ width: '0%' }}
+          animate={{ width: `${percent}%` }}
+          transition={{ duration: 1, ease: 'easeOut' }}
         />
       </div>
       {xp != null && xpToNext != null && (
