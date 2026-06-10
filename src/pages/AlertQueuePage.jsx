@@ -215,9 +215,10 @@ export default function AlertQueuePage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((alert) => (
+                filtered.map((alert, index) => (
                   <AlertRow
                     key={alert.id}
+                    index={index}
                     severity={alert.severity}
                     timestamp={alert.timestamp}
                     source={alert.source}

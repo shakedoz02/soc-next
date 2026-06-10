@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
@@ -115,14 +116,19 @@ export default function ProfilePage() {
     <div className="p-8 max-w-5xl">
       <PageHeader
         eyebrow="חשבון משתמש"
-        title="פרופיל ואנליטיקס"
+        title="פרופיל אישי"
         description="נהל את הפרופיל שלך ועקוב אחר ההתקדמות"
         className="mb-8"
       />
 
       <div className="grid grid-cols-12 gap-6">
         {/* Profile card */}
-        <div className="col-span-12 md:col-span-4">
+        <motion.div
+          className="col-span-12 md:col-span-4"
+          initial={{ opacity: 0, x: -28 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 160 }}
+        >
           <div className="bg-[#1C2536] border border-[#222f45] rounded-lg p-6">
             <div className="flex flex-col items-center text-center mb-6">
               <div
@@ -133,9 +139,14 @@ export default function ProfilePage() {
               </div>
               <h2 className="text-white font-bold text-xl">{user?.name}</h2>
               <p className="text-slate-500 text-sm">{user?.email}</p>
-              <div className="mt-2 px-3 py-1 bg-[#9FEF00]/10 border border-[#9FEF00]/30 rounded text-[#9FEF00] text-xs font-bold uppercase tracking-wider">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', damping: 18, stiffness: 220, delay: 0.2 }}
+                className="mt-2 px-3 py-1 bg-[#9FEF00] rounded text-[#0d1117] text-xs font-black uppercase tracking-wider"
+              >
                 {user?.rank}
-              </div>
+              </motion.div>
             </div>
 
             {/* XP bar */}
@@ -177,7 +188,12 @@ export default function ProfilePage() {
           </div>
 
           {/* Subscription */}
-          <div className="bg-[#1C2536] border border-[#9FEF00]/20 rounded-lg p-5 mt-4">
+          <motion.div
+            className="bg-[#1C2536] border border-[#9FEF00]/20 rounded-lg p-5 mt-4"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 160, delay: 0.25 }}
+          >
             <div className="flex items-center gap-2 mb-3">
               <span className="material-symbols-outlined text-[#9FEF00] text-base" aria-hidden="true">workspace_premium</span>
               <span className="text-sm font-bold text-white">תוכנית Free</span>
@@ -186,11 +202,16 @@ export default function ProfilePage() {
             <PrimaryButton disabled className="w-full py-2 text-sm opacity-60 cursor-not-allowed">
               שדרג ל-Pro (בקרוב)
             </PrimaryButton>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Right column */}
-        <div className="col-span-12 md:col-span-8 space-y-6">
+        <motion.div
+          className="col-span-12 md:col-span-8 space-y-6"
+          initial={{ opacity: 0, x: 28 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 160, delay: 0.1 }}
+        >
           {/* History */}
           <div className="bg-[#1C2536] border border-[#222f45] rounded-lg">
             <div className="p-4 border-b border-[#222f45] flex items-center gap-2">
@@ -207,10 +228,13 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="divide-y divide-[#1C2536]" role="list" aria-label="רשימת חקירות">
-                {investigations.map((inv) => (
-                  <div
+                {investigations.map((inv, index) => (
+                  <motion.div
                     key={inv.id}
                     role="listitem"
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ type: 'spring', damping: 24, stiffness: 180, delay: index * 0.05 }}
                     className="px-5 py-4 flex items-center justify-between hover:bg-[#111927]/50 transition-colors"
                   >
                     <div>
@@ -242,7 +266,7 @@ export default function ProfilePage() {
                         הושלם
                       </span>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -258,15 +282,19 @@ export default function ProfilePage() {
               <span className="text-xs text-slate-500 font-mono">{earnedCount}/{achievements.length} נרכשו</span>
             </div>
             <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-3" role="list" aria-label="הישגים">
-              {achievements.map(({ icon, label, desc, earned }) => (
-                <div
+              {achievements.map(({ icon, label, desc, earned }, index) => (
+                <motion.div
                   key={label}
                   role="listitem"
                   aria-label={`${label}: ${earned ? 'הושג' : 'לא הושג'}`}
-                  className={`p-4 rounded border transition-all ${
+                  initial={{ opacity: 0, scale: 0.88 }}
+                  animate={{ opacity: earned ? 1 : 0.4, scale: 1 }}
+                  transition={{ type: 'spring', damping: 20, stiffness: 200, delay: 0.15 + index * 0.06 }}
+                  whileHover={earned ? { scale: 1.04, opacity: 1 } : {}}
+                  className={`p-4 rounded border transition-colors ${
                     earned
                       ? 'bg-[#9FEF00]/5 border-[#9FEF00]/30'
-                      : 'bg-[#111927]/50 border-[#222f45] opacity-40'
+                      : 'bg-[#111927]/50 border-[#222f45]'
                   }`}
                 >
                   <span className={`material-symbols-outlined text-2xl ${earned ? 'text-[#9FEF00]' : 'text-slate-600'}`} aria-hidden="true">
@@ -277,11 +305,11 @@ export default function ProfilePage() {
                   {earned && (
                     <div className="mt-2 text-[9px] text-[#9FEF00] font-mono uppercase tracking-wider">✔ הושג</div>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

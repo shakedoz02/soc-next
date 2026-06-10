@@ -94,7 +94,7 @@ export default function LobbyPage() {
     <div className="p-8">
       <PageHeader
         eyebrow="לובי ראשי"
-        title={`שלום, ${user?.name} 👋`}
+        title={`שלום, ${user?.name}`}
         description="בחר תרחיש תקיפה להתחלת סימולציה"
       />
 
@@ -140,10 +140,14 @@ export default function LobbyPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {scenarios.map((scenario) => (
-          <div
+        {scenarios.map((scenario, index) => (
+          <motion.div
             key={scenario.id}
-            className="bg-[#1C2536] border border-[#222f45] rounded-lg p-6 hover:border-[#9FEF00]/40 transition-all group"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 180, delay: index * 0.08 }}
+            whileHover={{ scale: 1.015 }}
+            className="bg-[#1C2536] border border-[#222f45] rounded-lg p-6 hover:border-[#9FEF00]/50 hover:shadow-[0_0_24px_rgba(159,239,0,0.08)] transition-colors duration-300 group cursor-pointer"
           >
             <div className="flex justify-between items-start mb-4">
               <div className="w-11 h-11 bg-[#9FEF00]/10 rounded flex items-center justify-center group-hover:bg-[#9FEF00]/20 transition-colors">
@@ -171,7 +175,7 @@ export default function LobbyPage() {
                 התחל חקירה
               </PrimaryButton>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

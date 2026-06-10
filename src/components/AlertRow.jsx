@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { motion } from 'framer-motion';
 import SeverityBadge from './ui/SeverityBadge';
 import PrimaryButton from './ui/PrimaryButton';
 
@@ -9,11 +10,21 @@ const SEV_ICON = {
   LOW:      { icon: 'info',      iconColor: 'text-slate-500',  text: 'text-slate-400' },
 };
 
-function AlertRow({ severity, timestamp, source, title, cve, onInvestigate }) {
+function AlertRow({ severity, timestamp, source, title, cve, onInvestigate, index = 0 }) {
   const s = SEV_ICON[severity] || SEV_ICON.LOW;
 
   return (
-    <tr className="hover:bg-[#1C2536]/50 transition-colors group">
+    <motion.tr
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: 'spring', damping: 26, stiffness: 180, delay: index * 0.04 }}
+      whileHover={{
+        backgroundColor: 'rgba(159, 239, 0, 0.07)',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+        transition: { duration: 0.18 },
+      }}
+      className="group cursor-pointer"
+    >
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <span className={`material-symbols-outlined text-lg ${s.iconColor}`} aria-hidden="true">{s.icon}</span>
@@ -40,7 +51,7 @@ function AlertRow({ severity, timestamp, source, title, cve, onInvestigate }) {
           חקור אירוע
         </PrimaryButton>
       </td>
-    </tr>
+    </motion.tr>
   );
 }
 
