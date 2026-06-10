@@ -7,6 +7,7 @@ const HELP_LINES = [
   '  kill-session <IP>       — ביטול סשן פעיל',
   '  whois <IP>              — מידע על כתובת IP',
   '  scan <IP>               — סריקת פורטים פתוחים',
+  '  port-info               — הסבר על הפורטים שנמצאו בסריקה',
   '  reset-password <user>   — איפוס סיסמה למשתמש',
   '  disable-account <user>  — השבתת חשבון משתמש',
   '  block-url <URL>         — חסימת כתובת URL',
@@ -16,6 +17,110 @@ const HELP_LINES = [
 ];
 
 const BLOCK_COMMANDS = ['fw-block', 'isolate-host', 'kill-session'];
+
+const SCAN_PORTS = {
+  'sql-injection': [
+    '  80/tcp   open  http',
+    '  443/tcp  open  https',
+    '  3306/tcp open  mysql',
+  ],
+  'brute-force': [
+    '  22/tcp   open  ssh',
+    '  3389/tcp open  rdp',
+    '  443/tcp  open  https',
+  ],
+  'ransomware': [
+    '  22/tcp   open  ssh',
+    '  4444/tcp open  c2-beacon',
+    '  8080/tcp open  http-proxy',
+  ],
+  'port-scan': [
+    '  22/tcp   open  ssh',
+    '  80/tcp   open  http',
+    '  443/tcp  open  https',
+    '  3306/tcp open  mysql',
+    '  8080/tcp open  http-alt',
+    '  3389/tcp open  rdp',
+  ],
+  'phishing': [
+    '  25/tcp   open  smtp',
+    '  80/tcp   open  http',
+    '  443/tcp  open  https',
+  ],
+  'ddos': [
+    '  80/tcp   open  http',
+    '  443/tcp  open  https',
+    '  53/tcp   open  dns',
+  ],
+  'privilege-escalation': [
+    '  22/tcp   open  ssh',
+    '  4444/tcp open  c2-beacon',
+    '  9999/tcp open  backdoor',
+  ],
+  'data-exfiltration': [
+    '  443/tcp  open  https',
+    '  3306/tcp open  mysql',
+    '  5432/tcp open  postgresql',
+    '  22/tcp   open  ssh',
+  ],
+  default: [
+    '  22/tcp   open  ssh',
+    '  80/tcp   open  http',
+    '  443/tcp  open  https',
+  ],
+};
+
+const PORT_INFO = {
+  'sql-injection': [
+    '  80/tcp  — HTTP: שרת Web. ערוץ התקיפה הראשי — דרכו נשלחו בקשות SQL זדוניות.',
+    '  443/tcp — HTTPS: תעבורה מוצפנת. יכול להסתיר payload של הזרקת SQL.',
+    '  3306/tcp — MySQL: שרת מסד נתונים. רלוונטי כי התוקף ניסה לגנוב נתונים ישירות ממסד הנתונים.',
+  ],
+  'brute-force': [
+    '  22/tcp  — SSH: גישה מרוחקת מוצפנת. יעד נפוץ למתקפות כוח גס.',
+    '  3389/tcp — RDP: שולחן עבודה מרוחק של Windows. חשוף למתקפות כוח גס ולגישה לא מורשית.',
+    '  443/tcp — HTTPS: שימש לגישה לפורטל האימות שהותקף.',
+  ],
+  'ransomware': [
+    '  22/tcp  — SSH: שימש לתנועה לרוחב ברשת לאחר הפריצה הראשונית.',
+    '  4444/tcp — C2 Beacon: פורט קלאסי לתקשורת Command & Control. מעיד על נוכחות נוזקה פעילה.',
+    '  8080/tcp — HTTP Proxy: שימש להעברת תעבורת C2 כדי לעקוף חסימות חומת אש.',
+  ],
+  'port-scan': [
+    '  22/tcp  — SSH: גישה מרוחקת. זוהה בסריקה כפורט פתוח ברשת.',
+    '  80/tcp  — HTTP: שרת Web לא מוצפן. נסרק לאיתור פגיעויות ידועות.',
+    '  443/tcp — HTTPS: שרת Web מוצפן. נכלל בסריקת הפגיעויות.',
+    '  3306/tcp — MySQL: מסד נתונים חשוף לרשת — ממצא קריטי בסריקה.',
+    '  8080/tcp — HTTP Alt: פורט Web חלופי. לעיתים משמש לממשקי ניהול.',
+    '  3389/tcp — RDP: גישה מרוחקת ל-Windows. ממצא בסיכון גבוה בסריקה.',
+  ],
+  'phishing': [
+    '  25/tcp  — SMTP: שרת דואר. שימש לשליחת מיילי פישינג מתוך הרשת.',
+    '  80/tcp  — HTTP: אתר פישינג מזויף הושת על שרת זה.',
+    '  443/tcp — HTTPS: גרסה מוצפנת של אתר הפישינג להגברת אמינות.',
+  ],
+  'ddos': [
+    '  80/tcp  — HTTP: היעד העיקרי של ה-DDoS — הוצף בבקשות.',
+    '  443/tcp — HTTPS: שכבת HTTPS גם היא הוצפה במסגרת המתקפה.',
+    '  53/tcp  — DNS: פורט DNS על TCP — מעיד על ניסיון להציף שאילתות DNS.',
+  ],
+  'privilege-escalation': [
+    '  22/tcp  — SSH: שימש לגישה ראשונית שדרכה בוצעה הסלמת ההרשאות.',
+    '  4444/tcp — C2 Beacon: פורט תקשורת לשרת שליטה — הנוזקה מחכה לפקודות.',
+    '  9999/tcp — Backdoor: דלת אחורית שהותקנה לאחר הסלמת ההרשאות לשמירת גישה.',
+  ],
+  'data-exfiltration': [
+    '  443/tcp — HTTPS: ערוץ ההדלפה הראשי — נתונים הוצאו מוצפנים דרך HTTPS.',
+    '  3306/tcp — MySQL: מסד הנתונים ממנו הוצאו הנתונים.',
+    '  5432/tcp — PostgreSQL: מסד נתונים נוסף שנפרץ לצורך חילוץ מידע.',
+    '  22/tcp  — SSH: שימש להעברת קבצים גנובים באמצעות SCP/SFTP.',
+  ],
+  default: [
+    '  22/tcp  — SSH: פרוטוקול גישה מרוחקת מוצפן.',
+    '  80/tcp  — HTTP: תעבורת Web לא מוצפנת.',
+    '  443/tcp — HTTPS: תעבורת Web מוצפנת.',
+  ],
+};
 
 const INITIAL_FINAL = null;
 
@@ -28,6 +133,7 @@ export function useTerminal(scenario) {
   const [input, setInput]               = useState('');
   const [score, setScore]               = useState(100);
   const [mistakes, setMistakes]         = useState(0);
+  const [scanRun, setScanRun]           = useState(false);
   // Stores 0-based playbook step indices that have been completed
   const [completedSteps, setCompletedSteps] = useState([]);
   // Stores the actual command strings executed (for finalState / PDF export)
@@ -83,12 +189,21 @@ export function useTerminal(scenario) {
       if (!arg) {
         lines.push({ type: 'error', text: 'שגיאה: נדרש כתובת IP.' });
       } else {
+        const ports = SCAN_PORTS[scenario?.id] ?? SCAN_PORTS.default;
         lines.push({ type: 'output', text: `Scanning ${arg}...` });
-        lines.push({ type: 'output', text: '  PORT   STATE  SERVICE' });
-        lines.push({ type: 'output', text: '  22/tcp  open   ssh' });
-        lines.push({ type: 'output', text: '  80/tcp  open   http' });
-        lines.push({ type: 'output', text: '  443/tcp open   https' });
+        lines.push({ type: 'output', text: '  PORT      STATE  SERVICE' });
+        ports.forEach(p => lines.push({ type: 'output', text: p }));
+        lines.push({ type: 'output', text: '💡 הקלד port-info לקבלת הסבר על הפורטים שנמצאו' });
+        setScanRun(true);
         tryCompleteStep(command, arg, lines);
+      }
+
+    } else if (command === 'port-info') {
+      if (!scanRun) {
+        lines.push({ type: 'error', text: 'שגיאה: הרץ scan <IP> קודם' });
+      } else {
+        const infos = PORT_INFO[scenario?.id] ?? PORT_INFO.default;
+        infos.forEach(t => lines.push({ type: 'output', text: t }));
       }
 
     } else if (BLOCK_COMMANDS.includes(command)) {
@@ -104,7 +219,13 @@ export function useTerminal(scenario) {
 
           tryCompleteStep(command, arg, lines);
         } else {
-          lines.push({ type: 'error', text: `✘ ${command.toUpperCase()} ${arg} — כתובת IP שגויה` });
+          const RLE = '\u202B';
+          const LRE = '\u202A';
+          const PDF = '\u202C';
+          lines.push({
+            type: 'error',
+            text: `✘ ${command.toUpperCase()} ${arg} — ${RLE}כתובת ${LRE}IP${PDF} שגויה${PDF}`,
+          });
           lines.push({ type: 'error', text: '  ► בדוק את הלוגים שוב ומצא את כתובת התוקף' });
           setScore(s => Math.max(0, s - 15));
           setMistakes(m => m + 1);
@@ -184,13 +305,19 @@ export function useTerminal(scenario) {
       }
 
     } else {
-      lines.push({ type: 'error', text: `פקודה לא מוכרת: "${command}". הקלד "help" לרשימת פקודות.` });
+      const RLE = '\u202B';
+      const LRE = '\u202A';
+      const PDF = '\u202C';
+      lines.push({
+        type: 'error',
+        text: `${RLE}פקודה לא מוכרת: ${LRE}"${command}"${PDF}. הקלד ${LRE}"help"${PDF} לרשימת פקודות.${PDF}`,
+      });
       setScore(s => Math.max(0, s - 5));
       setMistakes(m => m + 1);
     }
 
     push(lines);
-  }, [scenario]);
+  }, [scenario, scanRun]);
 
   const currentScore = score;
 

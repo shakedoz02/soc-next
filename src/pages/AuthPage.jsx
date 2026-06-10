@@ -9,6 +9,7 @@ export default function AuthPage() {
   const [password, setPassword]         = useState('');
   const [name, setName]                 = useState('');
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function AuthPage() {
     setLoading(false);
 
     if (error) {
-      toast.error(error.message);
+      setAuthError(error.message);
       return;
     }
 
@@ -36,6 +37,7 @@ export default function AuthPage() {
     setEmail('');
     setPassword('');
     setName('');
+    setAuthError('');
   };
 
   // ── Login / Register form ────────────────────────────────────────────────
@@ -93,7 +95,7 @@ export default function AuthPage() {
                     id="name"
                     type="text"
                     value={name}
-                    onChange={e => setName(e.target.value)}
+                    onChange={e => { setName(e.target.value); setAuthError(''); }}
                     placeholder="אנליסט ראשי"
                     required
                     className="w-full bg-[#111927] border-b-2 border-[#222f45] focus:border-[#9FEF00] outline-none text-white px-3 py-3 text-sm transition-colors placeholder-slate-600"
@@ -110,7 +112,7 @@ export default function AuthPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={e => { setEmail(e.target.value); setAuthError(''); }}
                   placeholder="analyst@soc.il"
                   required
                   autoComplete="email"
@@ -127,7 +129,7 @@ export default function AuthPage() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={e => { setPassword(e.target.value); setAuthError(''); }}
                   placeholder="מינימום 6 תווים"
                   required
                   minLength={6}
@@ -136,6 +138,13 @@ export default function AuthPage() {
                   dir="ltr"
                 />
               </div>
+
+              {authError && (
+                <div className="flex items-center justify-center gap-2 text-red-400 text-sm" dir="rtl" role="alert">
+                  <span className="material-symbols-outlined text-base flex-shrink-0" aria-hidden="true">warning</span>
+                  <span>{authError}</span>
+                </div>
+              )}
 
               <button
                 type="submit"

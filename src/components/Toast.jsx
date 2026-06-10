@@ -35,7 +35,7 @@ function ToastItem({ id, type, message, onRemove }) {
       role="alert"
       aria-live="assertive"
       className={`flex items-center gap-3 bg-[#1C2536] border border-[#222f45] border-l-4 ${colorMap[type] || colorMap.info} rounded px-4 py-3 shadow-xl min-w-[260px] max-w-sm transition-all duration-300 ${
-        visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
       }`}
     >
       <span className="material-symbols-outlined text-base flex-shrink-0" aria-hidden="true">
@@ -73,7 +73,7 @@ export function Toaster() {
 
   return (
     <div
-      className="fixed top-4 left-4 z-[9999] flex flex-col gap-2 pointer-events-none"
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 items-center pointer-events-none"
       role="region"
       aria-label="הודעות מערכת"
     >
