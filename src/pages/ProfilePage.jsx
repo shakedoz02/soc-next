@@ -85,16 +85,21 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user?.id) return;
 
-    supabase
-      .from('investigations')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('completed_at', { ascending: false })
-      .limit(20)
-      .then(({ data, error }) => {
+    async function fetchHistory() {
+      try {
+        const { data, error } = await supabase
+          .from('investigations')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('completed_at', { ascending: false })
+          .limit(20);
         if (!error && data) setInvestigations(data);
+      } finally {
         setLoadingHistory(false);
-      });
+      }
+    }
+
+    fetchHistory();
   }, [user?.id]);
 
   const handleSignOut = async () => {

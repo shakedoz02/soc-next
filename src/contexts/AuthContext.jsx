@@ -75,20 +75,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        setUser(await fetchAndMergeProfile(session.user));
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      try {
+        if (session?.user) {
+          setUser(await fetchAndMergeProfile(session.user));
+        } else {
+          setUser(null);
+        }
+      } catch {
         setUser(null);
-      }
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        setUser(await fetchAndMergeProfile(session.user));
-      } else {
-        setUser(null);
+      } finally {
+        if (event === 'INITIAL_SESSION') {
+          setLoading(false);
+        }
       }
     });
 
