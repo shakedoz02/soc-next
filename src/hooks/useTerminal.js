@@ -244,8 +244,18 @@ export function useTerminal(scenario) {
       if (!scanRun) {
         lines.push({ type: 'error', text: 'שגיאה: הרץ scan <IP> קודם' });
       } else {
+        const LRE = '‪', RLE = '‫', PDF = '‬';
         const infos = PORT_INFO[scenario?.id] ?? PORT_INFO.default;
-        infos.forEach(t => lines.push({ type: 'output', text: t }));
+        infos.forEach(t => {
+          const colonIdx = t.indexOf(': ');
+          if (colonIdx !== -1) {
+            const prefix = LRE + t.slice(0, colonIdx + 1) + PDF;
+            const desc   = RLE + t.slice(colonIdx + 2) + PDF;
+            lines.push({ type: 'output', text: prefix + ' ' + desc });
+          } else {
+            lines.push({ type: 'output', text: t });
+          }
+        });
       }
 
     } else if (BLOCK_COMMANDS.includes(command)) {
@@ -257,7 +267,7 @@ export function useTerminal(scenario) {
         const isCorrect = scenario?.solution?.keywords?.some(k => arg.includes(k)) ?? false;
         if (isCorrect) {
           lines.push({ type: 'success', text: `✔ ${command.toUpperCase()} ${arg} — בוצע בהצלחה` });
-          lines.push({ type: 'success', text: `  ► כתובת IP ${arg} נחסמה בחומת האש` });
+          lines.push({ type: 'success', text: `  ► ‫כתובת ‪IP ${arg}‬ נחסמה בחומת האש‬` });
 
           tryCompleteStep(command, arg, lines);
         } else {
