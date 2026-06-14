@@ -201,9 +201,9 @@ export function useTerminal(scenario) {
         } else if (scenarioId === 'phishing') {
           lines.push({ type: 'output', text: 'Scanning affected users...' });
           lines.push({ type: 'output', text: 'AFFECTED ACCOUNTS:' });
-          lines.push({ type: 'output', text: '  user: david.cohen@company.com — clicked phishing link' });
-          lines.push({ type: 'output', text: '  user: sarah.levi@company.com — credentials submitted' });
-          lines.push({ type: 'output', text: '  user: admin@company.com — session hijacked' });
+          lines.push({ type: 'output', text: '  user: david.cohen@company.com — clicked phishing link       → reset-password recommended' });
+          lines.push({ type: 'output', text: '  user: sarah.levi@company.com  — credentials submitted       → reset-password recommended' });
+          lines.push({ type: 'error',  text: '  user: admin@company.com       — session hijacked  ⚠         → disable-account IMMEDIATELY' });
           lines.push({ type: 'output', text: 'Total affected: 3 users' });
           lines.push({ type: 'output', text: '💡 הקלד port-info לקבלת מידע נוסף' });
         } else if (scenarioId === 'brute-force') {
@@ -342,8 +342,30 @@ export function useTerminal(scenario) {
         setScore(s => Math.max(0, s - 5));
         setMistakes(m => m + 1);
       } else {
-        lines.push({ type: 'output', text: `URL blocked successfully: ${arg}. Added to threat intelligence feed.` });
-        tryCompleteStep(command, arg, lines);
+        const isCorrect = scenario?.solution?.keywords?.some(k => arg.includes(k)) ?? false;
+        if (isCorrect) {
+          lines.push({ type: 'success', text: `✔ URL blocked successfully: ${arg}. Added to threat intelligence feed.` });
+          // Try exact match first; fall back to matching by command name only
+          const exactMatch = scenario?.solution?.commands?.find(e =>
+            e.cmd.toLowerCase().startsWith(command) && e.cmd.toLowerCase().includes(arg)
+          );
+          const fallbackEntry = exactMatch ?? scenario?.solution?.commands?.find(e =>
+            e.cmd.toLowerCase().startsWith(command)
+          );
+          if (fallbackEntry) {
+            lines.push({
+              type: 'success',
+              text: `  ► שלב ${fallbackEntry.stepIndex + 1} הושלם: ${scenario?.playbook?.[fallbackEntry.stepIndex]?.title}`,
+            });
+            setCompletedSteps(prev => prev.includes(fallbackEntry.stepIndex) ? prev : [...prev, fallbackEntry.stepIndex]);
+            setExecutedCmds(prev => prev.includes(fallbackEntry.cmd) ? prev : [...prev, fallbackEntry.cmd]);
+          }
+        } else {
+          lines.push({ type: 'error', text: `✘ block-url ${arg} — URL שגוי` });
+          lines.push({ type: 'error', text: '  ► בדוק את הלוגים ומצא את כתובת אתר הפישינג' });
+          setScore(s => Math.max(0, s - 15));
+          setMistakes(m => m + 1);
+        }
       }
 
     } else if (command === 'quarantine') {

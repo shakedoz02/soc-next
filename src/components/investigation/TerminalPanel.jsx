@@ -1,4 +1,4 @@
-import { useRef, useEffect, memo, useState } from 'react';
+import { useRef, useEffect, memo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const LINE_COLORS = {
@@ -8,6 +8,32 @@ const LINE_COLORS = {
   success: 'text-[#9FEF00]',
   error: 'text-red-400',
 };
+
+const CLICKABLE_REGEX = /(\b\d{1,3}(?:\.\d{1,3}){3}\b|[\w.+-]+@[\w-]+\.[\w.]+)/g;
+
+function renderWithClickables(text, onValueClick) {
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  const regex = new RegExp(CLICKABLE_REGEX.source, 'g');
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+    const value = match[0];
+    parts.push(
+      <span
+        key={match.index}
+        className="text-yellow-300 cursor-pointer hover:underline hover:text-yellow-100"
+        title={`לחץ להכנסה: ${value}`}
+        onClick={(e) => { e.stopPropagation(); onValueClick(value); }}
+      >
+        {value}
+      </span>
+    );
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return parts.length ? parts : text;
+}
 
 const QUICK_CMDS = [
   'help',
@@ -38,11 +64,12 @@ const cmdVariants = {
   exit: { opacity: 0, y: 4, scale: 0.95, transition: { duration: 0.1 } },
 };
 
-function TerminalLine({ line }) {
+function TerminalLine({ line, onValueClick }) {
   if (line.type !== 'prompt') {
+    const clickable = onValueClick && line.type !== 'input' && line.type !== 'system';
     return (
       <div className={LINE_COLORS[line.type] || 'text-slate-400'} dir="ltr">
-        {line.text}
+        {clickable ? renderWithClickables(line.text, onValueClick) : line.text}
       </div>
     );
   }
@@ -55,6 +82,22 @@ export default function TerminalPanel({ history, input, onInputChange, onKeyDown
   const terminalRef = useRef(null);
   const inputRef    = useRef(null);
   const [expanded, setExpanded] = useState(false);
+
+  const handleValueClick = useCallback((value) => {
+    const current = inputRef.current?.value ?? '';
+    let next;
+    if (!current.trim()) {
+      next = value;
+    } else if (current.endsWith(' ')) {
+      next = current + value;
+    } else {
+      const parts = current.split(' ');
+      parts[parts.length - 1] = value;
+      next = parts.join(' ');
+    }
+    onInputChange(next);
+    inputRef.current?.focus();
+  }, [onInputChange]);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -122,7 +165,7 @@ export default function TerminalPanel({ history, input, onInputChange, onKeyDown
               </div>
             );
           }
-          return <MemoTerminalLine key={i} line={line} />;
+          return <MemoTerminalLine key={i} line={line} onValueClick={handleValueClick} />;
         })}
       </div>
 
