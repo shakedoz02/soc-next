@@ -50,11 +50,15 @@ function authErrorMessage(error) {
 }
 
 async function fetchAndMergeProfile(authUser) {
-  const { data: profile } = await supabase
+  const timeout = new Promise(resolve => setTimeout(() => resolve(null), 5000));
+  const query = supabase
     .from('profiles')
     .select('name, xp, level, xp_to_next, rank, sessions_completed, accuracy')
     .eq('id', authUser.id)
     .single();
+
+  const result = await Promise.race([query, timeout]);
+  const profile = result?.data ?? null;
 
   if (!profile) return authUser;
 
@@ -75,6 +79,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const safetyTimer = setTimeout(() => setLoading(false), 8000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         if (session?.user) {
@@ -86,12 +92,16 @@ export function AuthProvider({ children }) {
         setUser(null);
       } finally {
         if (event === 'INITIAL_SESSION') {
+          clearTimeout(safetyTimer);
           setLoading(false);
         }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email, password) => {
