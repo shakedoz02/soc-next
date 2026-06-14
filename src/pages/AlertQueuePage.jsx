@@ -56,26 +56,41 @@ export default function AlertQueuePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchAlerts() {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from('alerts')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        const timeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 6000)
+        );
+        const query = supabase
+          .from('alerts')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (fetchError) {
+        const { data, error: fetchError } = await Promise.race([query, timeout]);
+
+        if (cancelled) return;
+        if (fetchError) {
+          setError('שגיאה בטעינת ההתראות. מציג נתוני גיבוי.');
+          setAlerts(ALERTS);
+        } else {
+          setAlerts((data?.length ? data : ALERTS).map(normalizeAlert));
+        }
+      } catch {
+        if (cancelled) return;
         setError('שגיאה בטעינת ההתראות. מציג נתוני גיבוי.');
         setAlerts(ALERTS);
-      } else {
-        setAlerts((data?.length ? data : ALERTS).map(normalizeAlert));
       }
 
       setLoading(false);
     }
 
     fetchAlerts();
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = useMemo(
