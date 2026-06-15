@@ -15,7 +15,7 @@ export default function XpProgressBar({ xp, xpToNext, percent: propPercent, labe
           className="h-full bg-[#9FEF00] rounded-full"
           initial={{ width: '0%' }}
           animate={{ width: `${percent}%` }}
-          transition={{ duration: 1, ease: 'easeOut' }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         />
       </div>
       {xp != null && xpToNext != null && (

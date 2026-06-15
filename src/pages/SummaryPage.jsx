@@ -37,7 +37,7 @@ function CircularScore({ score }) {
           strokeLinecap="round"
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.2, ease: 'easeOut' }}
+          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -250,7 +250,7 @@ export default function SummaryPage() {
                 key={label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', damping: 20, delay: index * 0.15 }}
+                transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: index * 0.12 }}
               >
                 <StatCard
                   icon={icon}

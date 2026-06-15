@@ -133,7 +133,7 @@ export default function ProfilePage() {
           className="col-span-12 md:col-span-4"
           initial={{ opacity: 0, x: -28 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', damping: 22, stiffness: 160 }}
+          transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.5 }}
         >
           <div className="bg-[#1C2536] border border-[#222f45] rounded-lg p-6">
             <div className="flex flex-col items-center text-center mb-6">
@@ -148,7 +148,7 @@ export default function ProfilePage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', damping: 18, stiffness: 220, delay: 0.2 }}
+                transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.4, delay: 0.15 }}
                 className="mt-2 px-3 py-1 bg-[#9FEF00] rounded text-[#0d1117] text-xs font-black uppercase tracking-wider"
               >
                 {user?.rank}
@@ -198,7 +198,7 @@ export default function ProfilePage() {
             className="bg-[#1C2536] border border-[#9FEF00]/20 rounded-lg p-5 mt-4"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', damping: 22, stiffness: 160, delay: 0.25 }}
+            transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.5, delay: 0.18 }}
           >
             <div className="flex items-center gap-2 mb-3">
               <span className="material-symbols-outlined text-[#9FEF00] text-base" aria-hidden="true">workspace_premium</span>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
           className="col-span-12 md:col-span-8 space-y-6"
           initial={{ opacity: 0, x: 28 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', damping: 22, stiffness: 160, delay: 0.1 }}
+          transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.5, delay: 0.08 }}
         >
           {/* History */}
           <div className="bg-[#1C2536] border border-[#222f45] rounded-lg">
@@ -240,7 +240,7 @@ export default function ProfilePage() {
                     role="listitem"
                     initial={{ opacity: 0, x: 16 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ type: 'spring', damping: 24, stiffness: 180, delay: index * 0.05 }}
+                    transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.35, delay: index * 0.04 }}
                     className="px-5 py-4 flex items-center justify-between hover:bg-[#111927]/50 transition-colors"
                   >
                     <div>

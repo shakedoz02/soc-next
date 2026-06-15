@@ -42,8 +42,9 @@ export default function TopBar() {
               <div className="w-32 h-1 bg-[#1C2536] rounded-full mt-1">
                 <motion.div
                   className="h-full bg-[#9FEF00] rounded-full"
+                  initial={{ width: '0%' }}
                   animate={{ width: `${xpPercent}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                 />
               </div>
             </div>

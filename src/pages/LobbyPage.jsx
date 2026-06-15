@@ -117,7 +117,7 @@ export default function LobbyPage() {
             key={label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', damping: 20, delay: index * 0.1 }}
+            transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: index * 0.07 }}
           >
             <StatCard icon={icon} label={label} value={value} color={color} className="border border-[#222f45] p-5" />
           </motion.div>
@@ -145,7 +145,7 @@ export default function LobbyPage() {
             key={scenario.id}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', damping: 22, stiffness: 180, delay: index * 0.08 }}
+            transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: index * 0.06 }}
             whileHover={{ scale: 1.015 }}
             className="bg-[#1C2536] border border-[#222f45] rounded-lg p-6 hover:border-[#9FEF00]/50 hover:shadow-[0_0_24px_rgba(159,239,0,0.08)] transition-colors duration-300 group cursor-pointer"
           >
