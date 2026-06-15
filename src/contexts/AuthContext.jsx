@@ -1,24 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-const LEVEL_THRESHOLDS = [0, 1000, 2500, 5000, 9000, 15000, 23000, 35000, 50000, 70000];
-
-function computeLevel(xp) {
-  let level = 1;
-  for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
-    if (xp >= LEVEL_THRESHOLDS[i]) level = i + 1;
-  }
-  const xpToNext = level < LEVEL_THRESHOLDS.length
-    ? LEVEL_THRESHOLDS[level]
-    : LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1] * 2;
-  const rank =
-    level >= 9 ? 'Elite Analyst' :
-    level >= 7 ? 'Lead Analyst'  :
-    level >= 5 ? 'Senior Analyst':
-    level >= 3 ? 'Analyst'       : 'Junior Analyst';
-  return { level, xpToNext, rank };
-}
-
 const AuthContext = createContext(null);
 
 function authErrorMessage(error) {
@@ -129,79 +111,44 @@ export function AuthProvider({ children }) {
   }) => {
     if (!user) return { error: { message: 'לא מחובר' } };
 
-    // 1. Fetch current profile stats
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('xp, sessions_completed, accuracy')
-      .eq('id', user.id)
-      .single();
+    const { data, error } = await supabase.rpc('add_xp_and_save_investigation', {
+      p_user_id:        user.id,
+      p_xp_to_add:      xpEarned,
+      p_scenario_id:    scenarioId,
+      p_scenario_title: scenarioTitle,
+      p_score:          score,
+      p_elapsed:        elapsed,
+      p_mistakes:       mistakes,
+      p_commands:       commands ?? [],
+    });
 
-    if (profileError) {
-      console.error('saveInvestigation: fetch profile error:', profileError);
-      return { error: profileError };
+    if (error) {
+      console.error('saveInvestigation RPC error:', error);
+      return { error };
     }
 
-    // 2. Compute new values (mirrors compute_level() and accuracy logic in schema)
-    const newXp       = profile.xp + xpEarned;
-    const newSessions = profile.sessions_completed + 1;
-    const newAccuracy = Number(
-      (((profile.accuracy * (newSessions - 1)) + score) / newSessions).toFixed(2)
-    );
-    const { level, xpToNext, rank } = computeLevel(newXp);
-
-    // 3. Update profile
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({
-        xp:                newXp,
-        level,
-        xp_to_next:        xpToNext,
-        rank,
-        sessions_completed: newSessions,
-        accuracy:           newAccuracy,
-      })
-      .eq('id', user.id);
-
-    if (updateError) {
-      console.error('saveInvestigation: update profile error:', updateError);
-      return { error: updateError };
-    }
-
-    // 4. Insert investigation record
-    const { error: insertError } = await supabase
-      .from('investigations')
-      .insert({
-        user_id:         user.id,
-        scenario_id:     scenarioId,
-        scenario_title:  scenarioTitle,
-        score,
-        xp_earned:       xpEarned,
-        elapsed_seconds: elapsed,
-        mistakes,
-        commands,
-      });
-
-    if (insertError) {
-      console.error('saveInvestigation: insert investigation error:', insertError);
-      return { error: insertError };
-    }
-
-    // 5. Sync local user state so UI reflects new XP/level immediately
+    // Sync local user state from the values the DB computed
     setUser(prev => prev ? {
       ...prev,
-      xp:                newXp,
-      level,
-      xpToNext,
-      rank,
-      sessionsCompleted: newSessions,
-      accuracy:          newAccuracy,
+      xp:                data.xp,
+      level:             data.level,
+      xpToNext:          data.xp_to_next,
+      rank:              data.rank,
+      sessionsCompleted: data.sessions_completed,
+      accuracy:          Number(data.accuracy),
     } : prev);
 
     return { error: null };
   };
 
+  const refreshProfile = async () => {
+    if (!user?.id) return;
+    const merged = await fetchAndMergeProfile(user);
+    setUser(merged);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, saveInvestigation }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, saveInvestigation, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -77,11 +77,17 @@ function formatDuration(seconds) {
 }
 
 export default function ProfilePage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   const [investigations, setInvestigations] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+
+  // Ensure profile stats are always fresh from the DB
+  useEffect(() => {
+    refreshProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!user?.id) return;

@@ -96,7 +96,11 @@ export default function InvestigationLabPage() {
       mistakes,
       commands,
     }).then(({ error }) => {
-      if (error) toast.error('שגיאה בשמירת התוצאות');
+      if (error) {
+        const msg = error?.message ?? error?.code ?? JSON.stringify(error);
+        console.error('[saveInvestigation] full error:', error);
+        toast.error(`שגיאה בשמירת התוצאות: ${msg}`);
+      }
     });
 
     setTimeout(() => {

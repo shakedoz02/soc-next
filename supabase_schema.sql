@@ -214,6 +214,9 @@ begin
 end;
 $$;
 
+grant execute on function public.compute_level(integer)                   to authenticated;
+grant execute on function public.add_xp_and_save_investigation(uuid, integer, text, text, integer, integer, integer, jsonb) to authenticated;
+
 -- -------------------------------------------------------
 -- 7. STORAGE BUCKET (אופציונלי — לדוחות PDF)
 -- -------------------------------------------------------
