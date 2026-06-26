@@ -69,6 +69,7 @@ export default function LobbyPage() {
   const xpPercent = Math.round(((user?.xp || 0) / (user?.xpToNext || 1)) * 100);
 
   const [displayPercent, setDisplayPercent] = useState(0);
+  const [xpHovered, setXpHovered] = useState(false);
   useEffect(() => {
     if (loading) return;
     const controls = animate(0, xpPercent, {
@@ -118,6 +119,7 @@ export default function LobbyPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: index * 0.07 }}
+            whileHover={{ y: -4, scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
           >
             <StatCard icon={icon} label={label} value={value} color={color} className="border border-[#222f45] p-5" />
           </motion.div>
@@ -125,19 +127,31 @@ export default function LobbyPage() {
       </div>
 
       {/* XP Progress */}
-      <div className="bg-[#1C2536] border border-[#222f45] rounded-lg p-5 mb-10">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: 0.32 }}
+        onHoverStart={() => setXpHovered(true)}
+        onHoverEnd={() => setXpHovered(false)}
+        className="bg-[#1C2536] border border-[#222f45] rounded-lg p-5 mb-10 cursor-default"
+      >
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm font-semibold text-white">התקדמות לרמה {(user?.level || 0) + 1}</span>
           <span className="font-mono text-xs text-[#9FEF00]">{displayPercent}%</span>
         </div>
-        <XpProgressBar xp={user?.xp} xpToNext={user?.xpToNext} percent={xpPercent} />
-      </div>
+        <XpProgressBar xp={user?.xp} xpToNext={user?.xpToNext} percent={xpPercent} isHovered={xpHovered} />
+      </motion.div>
 
       {/* Scenarios */}
-      <div className="mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.4, delay: 0.42 }}
+        className="mb-6"
+      >
         <h2 className="text-xl font-bold text-white mb-1">תרחישי תקיפה</h2>
         <p className="text-slate-500 text-sm">בחר תרחיש להתחלת חקירה</p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {scenarios.map((scenario, index) => (

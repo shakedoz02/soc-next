@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, memo } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ALERTS } from '../data/scenarios';
@@ -120,24 +121,37 @@ export default function AlertQueuePage() {
   return (
     <div className="p-8 font-assistant">
       {/* Page header */}
-      <div className="mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45 }}
+        className="mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4"
+      >
         <div>
           <h1 className="text-3xl font-bold text-white mb-1">תור התראות פעיל</h1>
           <p className="text-slate-400">מעקב וניהול אירועי אבטחה בזמן אמת</p>
         </div>
         <div className="flex gap-3 items-center">
-          <span
+          <motion.span
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.4, delay: 0.1 }}
             role="status"
             aria-label={`${criticalCount} התראות קריטיות`}
             className="bg-[#1C2536] border border-red-500/30 text-red-400 px-3 py-1.5 rounded-sm text-xs font-bold font-technical-mono"
           >
             {criticalCount} CRITICAL
-          </span>
-          <span className="bg-[#1C2536] border border-[#1C2536] text-slate-400 px-3 py-1.5 rounded-sm text-xs font-bold font-technical-mono">
+          </motion.span>
+          <motion.span
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.4, delay: 0.18 }}
+            className="bg-[#1C2536] border border-[#1C2536] text-slate-400 px-3 py-1.5 rounded-sm text-xs font-bold font-technical-mono"
+          >
             {alerts.length} ACTIVE
-          </span>
+          </motion.span>
         </div>
-      </div>
+      </motion.div>
 
       {error && (
         <div className="mb-6 flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded">
@@ -148,7 +162,13 @@ export default function AlertQueuePage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-[#1C2536] border border-[#1C2536] p-6 relative overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: 0.12 }}
+          whileHover={{ y: -4, scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+          className="bg-[#1C2536] border border-[#1C2536] p-6 relative overflow-hidden"
+        >
           <div className="absolute top-0 right-0 w-1 h-full bg-red-500" aria-hidden="true" />
           <div className="flex justify-between items-start mb-4">
             <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Critical Alerts</span>
@@ -158,9 +178,15 @@ export default function AlertQueuePage() {
           <div className="w-full bg-[#111927] h-1 rounded-full overflow-hidden">
             <div className="bg-red-500 h-full" style={{ width: `${Math.min(100, alerts.length ? (criticalCount / alerts.length) * 100 : 0)}%` }} />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-[#1C2536] border border-[#1C2536] p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: 0.2 }}
+          whileHover={{ y: -4, scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+          className="bg-[#1C2536] border border-[#1C2536] p-6"
+        >
           <div className="flex justify-between items-start mb-4">
             <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Mean Time to Resolve</span>
             <span className="material-symbols-outlined text-[#9FEF00]" aria-hidden="true">timer</span>
@@ -170,20 +196,31 @@ export default function AlertQueuePage() {
             <span className="material-symbols-outlined text-xs" aria-hidden="true">trending_down</span>
             12% שיפור מהשבוע שעבר
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-[#1C2536] border border-[#1C2536] p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: 0.28 }}
+          whileHover={{ y: -4, scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+          className="bg-[#1C2536] border border-[#1C2536] p-6"
+        >
           <div className="flex justify-between items-start mb-4">
             <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">System Health</span>
             <span className="material-symbols-outlined text-[#9FEF00]" aria-hidden="true">bolt</span>
           </div>
           <div className="text-4xl font-bold text-white mb-2">99.8%</div>
           <div className="text-xs text-slate-500 uppercase tracking-widest">Global Infrastructure</div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Alert table */}
-      <div className="bg-[#1C2536] border border-[#1C2536] rounded-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.45, delay: 0.38 }}
+        className="bg-[#1C2536] border border-[#1C2536] rounded-sm"
+      >
         <div className="p-4 border-b border-[#1C2536] flex justify-between items-center bg-[#1C2536]/30">
           <div className="flex items-center gap-4">
             <span className="text-sm font-bold text-slate-300">רשימת התראות</span>
@@ -252,7 +289,7 @@ export default function AlertQueuePage() {
             מציג {filtered.length} מתוך {alerts.length} התראות
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
