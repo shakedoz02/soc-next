@@ -23,7 +23,7 @@ function AlertRow({ severity, timestamp, source, title, cve, onInvestigate, inde
         boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
         transition: { duration: 0.18 },
       }}
-      className="group cursor-pointer"
+      className="group cursor-default"
     >
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
