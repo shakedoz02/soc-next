@@ -68,7 +68,10 @@ export default function InvestigationLabPage() {
       playbook:   variantPlaybook,
       attackerIP: variant.attacker_ip,
       solution: {
-        commands: variant.solution_commands,
+        commands: (variant.solution_commands ?? []).map(e => ({
+          cmd:       e.cmd,
+          stepIndex: e.stepIndex ?? e.step_index ?? 0,
+        })),
         keywords: variant.solution_keywords,
       },
     };

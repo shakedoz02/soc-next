@@ -11,25 +11,33 @@ const LINE_COLORS = {
 
 const CLICKABLE_REGEX = /(\b\d{1,3}(?:\.\d{1,3}){3}\b|[\w.+-]+@[\w-]+\.[\w.]+)/g;
 
-function renderWithClickables(text, onValueClick) {
+function makeClickable(value, key, onValueClick) {
+  return (
+    <span
+      key={key}
+      className="text-yellow-300 cursor-pointer hover:underline hover:text-yellow-100"
+      title={`לחץ להכנסה: ${value}`}
+      onClick={(e) => { e.stopPropagation(); onValueClick(value); }}
+    >
+      {value}
+    </span>
+  );
+}
+
+function renderWithClickables(text, onValueClick, values) {
+  // Build combined pattern: IP/email regex + any explicit values
+  const escapedValues = (values ?? []).map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = escapedValues.length
+    ? new RegExp(`(\\b\\d{1,3}(?:\\.\\d{1,3}){3}\\b|[\\w.+-]+@[\\w-]+\\.[\\w.]+|${escapedValues.join('|')})`, 'g')
+    : new RegExp(CLICKABLE_REGEX.source, 'g');
+
   const parts = [];
   let lastIndex = 0;
   let match;
-  const regex = new RegExp(CLICKABLE_REGEX.source, 'g');
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = pattern.exec(text)) !== null) {
     if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
-    const value = match[0];
-    parts.push(
-      <span
-        key={match.index}
-        className="text-yellow-300 cursor-pointer hover:underline hover:text-yellow-100"
-        title={`לחץ להכנסה: ${value}`}
-        onClick={(e) => { e.stopPropagation(); onValueClick(value); }}
-      >
-        {value}
-      </span>
-    );
-    lastIndex = regex.lastIndex;
+    parts.push(makeClickable(match[0], match.index, onValueClick));
+    lastIndex = pattern.lastIndex;
   }
   if (lastIndex < text.length) parts.push(text.slice(lastIndex));
   return parts.length ? parts : text;
@@ -69,7 +77,7 @@ function TerminalLine({ line, onValueClick }) {
     const clickable = onValueClick && line.type !== 'input' && line.type !== 'system';
     return (
       <div className={LINE_COLORS[line.type] || 'text-slate-400'} dir="ltr">
-        {clickable ? renderWithClickables(line.text, onValueClick) : line.text}
+        {clickable ? renderWithClickables(line.text, onValueClick, line.values) : line.text}
       </div>
     );
   }

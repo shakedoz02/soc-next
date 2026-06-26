@@ -207,16 +207,20 @@ export function useTerminal(scenario) {
           lines.push({ type: 'output', text: 'Total affected: 3 users' });
           lines.push({ type: 'output', text: '💡 הקלד port-info לקבלת מידע נוסף' });
         } else if (scenarioId === 'brute-force') {
+          const resetCmd = scenario?.solution?.commands?.find(e => e.cmd.toLowerCase().startsWith('reset-password'));
+          const compromisedUser = resetCmd ? resetCmd.cmd.split(' ')[1] : 'operator';
           lines.push({ type: 'output', text: 'Scanning target system...' });
           lines.push({ type: 'output', text: 'AUTHENTICATION LOGS:' });
           lines.push({ type: 'output', text: '  service: SSH (port 22) — 312 failed attempts' });
           lines.push({ type: 'output', text: '  service: RDP (port 3389) — 89 failed attempts' });
-          lines.push({ type: 'output', text: '  compromised account: operator' });
+          lines.push({ type: 'output', text: `  compromised account: ${compromisedUser}`, values: [compromisedUser] });
           lines.push({ type: 'output', text: '  last successful login: from attacker IP' });
         } else if (scenarioId === 'privilege-escalation') {
+          const disableCmd = scenario?.solution?.commands?.find(e => e.cmd.toLowerCase().startsWith('disable-account'));
+          const escalatedUser = disableCmd ? disableCmd.cmd.split(' ')[1] : 'john.doe';
           lines.push({ type: 'output', text: 'Scanning compromised system...' });
           lines.push({ type: 'output', text: 'PRIVILEGE AUDIT:' });
-          lines.push({ type: 'output', text: '  user: john.doe — escalated to ROOT' });
+          lines.push({ type: 'output', text: `  user: ${escalatedUser} — escalated to ROOT`, values: [escalatedUser] });
           lines.push({ type: 'output', text: '  modified files: /etc/shadow, /etc/passwd' });
           lines.push({ type: 'output', text: '  new hidden account: .sysadmin' });
           lines.push({ type: 'output', text: '  cron persistence: detected' });
@@ -322,8 +326,23 @@ export function useTerminal(scenario) {
         setScore(s => Math.max(0, s - 5));
         setMistakes(m => m + 1);
       } else {
-        lines.push({ type: 'output', text: `Password reset successful for user: ${arg}. Temporary password sent to security team.` });
-        tryCompleteStep(command, arg, lines);
+        const entry = scenario?.solution?.commands?.find(e =>
+          e.cmd.toLowerCase() === `${command} ${arg.toLowerCase()}`
+        );
+        if (entry) {
+          lines.push({ type: 'output', text: `Password reset successful for user: ${arg}. Temporary password sent to security team.` });
+          lines.push({
+            type: 'success',
+            text: `  ► שלב ${entry.stepIndex + 1} הושלם: ${scenario?.playbook?.[entry.stepIndex]?.title}`,
+          });
+          setCompletedSteps(prev => prev.includes(entry.stepIndex) ? prev : [...prev, entry.stepIndex]);
+          setExecutedCmds(prev => prev.includes(entry.cmd) ? prev : [...prev, entry.cmd]);
+        } else {
+          lines.push({ type: 'error', text: `✘ reset-password ${arg} — שם משתמש שגוי` });
+          lines.push({ type: 'error', text: '  ► בדוק את הלוגים ומצא את החשבון שנפרץ' });
+          setScore(s => Math.max(0, s - 15));
+          setMistakes(m => m + 1);
+        }
       }
 
     } else if (command === 'disable-account') {
@@ -332,8 +351,23 @@ export function useTerminal(scenario) {
         setScore(s => Math.max(0, s - 5));
         setMistakes(m => m + 1);
       } else {
-        lines.push({ type: 'output', text: `Account ${arg} has been disabled. All active sessions terminated.` });
-        tryCompleteStep(command, arg, lines);
+        const entry = scenario?.solution?.commands?.find(e =>
+          e.cmd.toLowerCase() === `${command} ${arg.toLowerCase()}`
+        );
+        if (entry) {
+          lines.push({ type: 'output', text: `Account ${arg} has been disabled. All active sessions terminated.` });
+          lines.push({
+            type: 'success',
+            text: `  ► שלב ${entry.stepIndex + 1} הושלם: ${scenario?.playbook?.[entry.stepIndex]?.title}`,
+          });
+          setCompletedSteps(prev => prev.includes(entry.stepIndex) ? prev : [...prev, entry.stepIndex]);
+          setExecutedCmds(prev => prev.includes(entry.cmd) ? prev : [...prev, entry.cmd]);
+        } else {
+          lines.push({ type: 'error', text: `✘ disable-account ${arg} — שם משתמש שגוי` });
+          lines.push({ type: 'error', text: '  ► בדוק את הלוגים ומצא את החשבון שבוצעה בו ההסלמה' });
+          setScore(s => Math.max(0, s - 15));
+          setMistakes(m => m + 1);
+        }
       }
 
     } else if (command === 'block-url') {
