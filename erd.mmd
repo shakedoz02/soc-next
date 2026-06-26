@@ -1,0 +1,123 @@
+erDiagram
+    profiles {
+        uuid id PK
+        text email
+        text name
+        text role
+        int4 level
+        int4 xp
+        int4 xp_to_next
+        text rank
+        int4 sessions_completed
+        numeric accuracy
+        text profile_pic_url
+        timestamptz created_at
+    }
+    scenarios {
+        text id PK
+        text title
+        text title_he
+        text description
+        text difficulty
+        text category
+        text duration
+        int4 xp_reward
+        text icon
+        text attacker_ip
+        jsonb solution_commands
+        jsonb solution_keywords
+        bool is_active
+        timestamptz created_at
+    }
+    alerts {
+        text id PK
+        text scenario_id FK
+        text severity
+        text title
+        text cve
+        text source
+        text status
+        timestamptz created_at
+    }
+    logs {
+        int8 id PK
+        text scenario_id FK
+        timestamptz timestamp
+        text source
+        text level
+        text message
+        text source_ip
+        int4 variant_number
+        int4 min_level
+    }
+    playbook_steps {
+        int8 id PK
+        text scenario_id FK
+        int4 step_number
+        text title
+        text description
+    }
+    investigations {
+        uuid id PK
+        uuid user_id FK
+        text scenario_id FK
+        text scenario_title
+        int4 score
+        int4 xp_earned
+        int4 elapsed_seconds
+        int4 mistakes
+        timestamptz completed_at
+        jsonb commands
+    }
+    achievements {
+        text id PK
+        text title
+        text description
+        text icon
+        int4 xp_bonus
+        text condition_type
+        int4 condition_value
+    }
+    user_achievements {
+        uuid user_id PK
+        text achievement_id PK
+        timestamptz earned_at
+    }
+    user_scenario_progress {
+        uuid user_id PK
+        text scenario_id PK
+        text status
+        int4 best_score
+        int4 attempts
+        timestamptz last_played_at
+    }
+    notifications {
+        uuid id PK
+        uuid user_id FK
+        text type
+        text title
+        text message
+        bool is_read
+        timestamptz created_at
+    }
+    scenario_variants {
+        int8 id PK
+        text scenario_id FK
+        int4 variant_number
+        int4 min_level
+        text attacker_ip
+        jsonb solution_commands
+        jsonb solution_keywords
+    }
+
+    profiles ||--o{ investigations : "user_id"
+    profiles ||--o{ user_achievements : "user_id"
+    profiles ||--o{ user_scenario_progress : "user_id"
+    profiles ||--o{ notifications : "user_id"
+    scenarios ||--o{ alerts : "scenario_id"
+    scenarios ||--o{ logs : "scenario_id"
+    scenarios ||--o{ playbook_steps : "scenario_id"
+    scenarios ||--o{ investigations : "scenario_id"
+    scenarios ||--o{ user_scenario_progress : "scenario_id"
+    scenarios ||--o{ scenario_variants : "scenario_id"
+    achievements ||--o{ user_achievements : "achievement_id"
