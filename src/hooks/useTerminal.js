@@ -232,6 +232,7 @@ export function useTerminal(scenario) {
           lines.push({ type: 'output', text: '  Endpoint-15 — beacon active' });
           lines.push({ type: 'output', text: '  C2 server: <attacker IP>' });
           lines.push({ type: 'output', text: '  Ransomware family: LockBit 3.0' });
+          lines.push({ type: 'output', text: '  Malicious file detected: invoice_Q3.docm (macro-enabled)', values: ['invoice_Q3.docm'] });
         } else {
           const ports = SCAN_PORTS.default;
           lines.push({ type: 'output', text: `Scanning ${arg}...` });
